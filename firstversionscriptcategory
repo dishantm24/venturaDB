@@ -1,58 +1,8 @@
---select Rtrim(s.category1) As Cat_1, s.ISINNo, s.scripcode, rtrim(s.name)+s.series
---as SymbolSeries, s.series, Rtrim(s.category) as Cat ,
---(case when (s.category in ('C','D','E') or s.category like 'C_%_%' ) 
---then 999 else c.buymgn*100 end) as catM,
---(case when S.GSMFlag in (11,12,13,14,15,16,20,21,22,33) then S.GSMFlag  else '' end) 
---as ASM_FLAG  ---ASM Flag
---from scripmaster s inner join Scripcategory c on s.category=c.category
--- where series not in ('BE','BZ','BT','IT','SM','SG','ST','SZ') and
---exch = 'N' and  exchtype = 'C'  and scripcode in (...)
-
-
---FNO :  tokeninfo
---Cat_1 :  marginreport
---ISINNo :  marginreport
---scripcode :   marginreport
---SymbolSeries :  marginreport +   [NSEM]
---series:   [NSEM]
---base : CATM + marginreport
---buymgn : category margin 
---GSMFlag  : f23 from securitydata
---TOTTRDQTY--from bhavreport
---CLOSE--bhavreport
----var,elm,adii: varreport
---fnomar--fnovalues 
---maximumvalues- from FNOmar, Maxvalues
---I_M -- imvalues 
---
-
---T-4V  0305  T-3V  0405, T-2V  0505,T-1V  0805,TV 0905***  : Total from BHav files 
---T-2Rate  0505	T-1Rate  0805	Trate  0905 : closing rate from Bhva files 
- 
-
-
--- DECLARE @max1 AS int SET @max1 = 25
--- declare @max2 as int  set  @max2 = 38
- 
-
---PRINT @TestVariable
---with casevar1 as(
-
---select F3,
---case when tf.F3 = 'IND' then 25 
---when tf.F3 = 'FNO' then 30 
---else 38
---end as 'value'
---from tokeninfo tf
---) 
---select * from casevar1;
-
---=ROUNDUP(MAX(AG1,IF(A1="IND",20,25)),0)
 
 with varvalues as (
-select   F3, m1.[ scripcode], case 
-when tf.F3  ='IND' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
-when tf.F3  ='FNO' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
+select   FNOIND, m1.[ scripcode], case 
+when tf.FNOIND  ='IND' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
+when tf.FNOIND  ='FNO' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
 else ceiling ( (vr.VAR + vr.ELM*5 + vr.ADDI) + 5 )
 end as 'var+el+adii' from marginreport m1 
 left   join tokeninfo tf on m1.[ scripcode] = tf.TOKEN 
@@ -70,10 +20,10 @@ where ns.series not in ('BE','BZ','BT','IT','SM','SG','ST','SZ')
 ),
 
 maxvalue as (
-select   m3.[ scripcode],F3,
+select   m3.[ scripcode],FNOIND,
 case when 
-F3 = 'IND' then 25 when 
-F3 = 'FNO' then 30 
+FNOIND = 'IND' then 25 when 
+FNOIND = 'FNO' then 30 
 else 38
 end as 'maxvalues'
 from marginreport m3 
@@ -99,9 +49,9 @@ inner join VARreport vr on m4.ISINNO = vr.ISINNO
  ),
 
 maxcatnew as (
-select   m5.[ scripcode],F3,
+select   m5.[ scripcode],FNOIND,
 case when 
-F3 = 'IND' then 20  
+FNOIND = 'IND' then 20  
 else 25
 end as 'maxcat'
 from marginreport m5 
@@ -110,7 +60,7 @@ inner join [dbo].[NSEM] ns on m5.[ scripcode] = ns.Token
 where ns.series not in ('BE','BZ','BT','IT','SM','SG','ST','SZ')
 )
 
-select distinct   tf.F3 as 'FNO/IND',Rtrim(m.[ Category1]) as 'CAT_1',
+select distinct   tf.FNOIND as 'FNOIND',Rtrim(m.[ Category1]) as 'CAT_1',
 m.ISINNO,m.[ scripcode] as 'scripcode',
 Rtrim([ Scrip_Name])+ ns.Series as 'Symbol Series',
 ns.Series,
@@ -178,62 +128,5 @@ inner join VARreport vr on m.ISINNO = vr.ISINNO
 left join spanreport sp on m.[ Scrip_Name] = sp.Symbol
 inner join BSEM bs on m.ISINNO = bs.ISIN 
 where ns.series not in ('BE','BZ','BT','IT','SM','SG','ST','SZ') 
-order by  tf.F3 desc 
+order by  tf.FNOIND desc 
 
-
-
-
---=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),0)
-
---x1 = var+adii+elm
---a1 = f3
---ab1 = fnomar v
-
---max(14,25,30)
---=ROUNDUP(U1+IF(A1="IND",3*V1,IF(A1="FNO",3*V1+0,5*V1+0))+W1,0)+5
---=ROUNDUP(U1+IF(A1="IND",3*V1,IF(A1="FNO",3*V1+0,5*V1+0))+W1,0)+5
-
---u1 = var,a1 = ind/fno
-
---= Roundup(VAR+ (if Index scrip then 3 else 
---		If FNO scrip then 3 else
---		rest if category is not (C_%_%,D,E) then 5 ) * ELM
---		+ Addi
---		+ Cousion %
---		If C_%_%,D or E then
---		rouundup (VAR+ELM+Addi + + Cousion,50),0
-
---And same time If Index then Min 25,
---		If FNO then Min 30,
---		Rest Bxx will be Min 38
---		C_%_%,D,E min 50
-
---select top 1 *  from spanreport
---select top 1 * from marginreport
-
---select top 1 * from VARreport
-----select * from securitydata
-
-----select * from[dbo].[CATM] 
-
-----alter table [bhav1]
-----add TOTALTRDQTY INT
-----select * from [dbo].[bhav1] where ISIN = 'INE001A01036'
-
-----select [ Category1],* from marginreport
-
- 
----- select *  from [dbo].[NSEM]
-
--- select  ISIN I ,  * from [dbo].[BSEM] order by ISIN
- 
--- where ISIN <> 'NULL'
-
-
-
---select top 1  * from marginreport order  by 1 
-
---select top 100 *  from tokeninfo
-
- 
-
