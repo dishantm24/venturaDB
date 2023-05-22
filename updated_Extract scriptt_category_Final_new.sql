@@ -114,7 +114,97 @@ from marginreport m5
 left   join tokeninfo tf on m5.[ scripcode] = tf.TOKEN 
 inner  join [dbo].[NSEM] ns on m5.[ scripcode] = ns.Token
 where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
-) 
+) ,
+
+
+maximummvalue as  (
+
+select m6.[ scripcode],
+case when v.[var+el+adii] > mx.maxvalues and v.[var+el+adii] > f.FNOMAR then v.[var+el+adii]
+when mx.maxvalues> v.[var+el+adii] and mx.maxvalues > f.FNOMAR then mx.maxvalues
+when  f.FNOMAR > v.[var+el+adii]and  f.FNOMAR >mx.maxvalues then  f.FNOMAR
+when m6.[ Category] ='C' and m6.[ Category] like 'C%' then 50
+when m6.[ Category] ='D' and m6.[ Category] like 'D%' then 100
+when m6.[ Category] ='E' and m6.[ Category] like 'E%' then 100
+else v.[var+el+adii]
+end as 'MAXIUMVALUE'
+from marginreport m6
+left   join tokeninfo tf on m6.[ scripcode] = tf.TOKEN 
+inner  join [dbo].[NSEM] ns on m6.[ scripcode] = ns.Token
+inner join maxvalue mx on m6.[ scripcode] = mx.[ scripcode]
+inner join fnovalues f on m6.[ scripcode] = f.[ scripcode]
+inner join varvalues v on m6.[ scripcode] = v.[ scripcode]
+where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
+
+
+),
+
+CTE as (
+
+select m7.[ scripcode] ,
+case when FNOIND = 'IND' and MAXIUMVALUE between 15 and 99 then m7.[ Category]
+when FNOIND = 'FNO' and MAXIUMVALUE between 25 and 99 then m7.[ Category]
+when FNOIND = NULL and MAXIUMVALUE between 33 and 99 then m7.[ Category]
+when MAXIUMVALUE > 99 then m7.[ Category]
+else m7.[ Category]
+end as 'NEWCAT'
+from marginreport m7
+left   join tokeninfo tf on m7.[ scripcode] = tf.TOKEN 
+inner  join [dbo].[NSEM] ns on m7.[ scripcode] = ns.Token
+inner join maximummvalue mxv on m7.[ scripcode] = m7.[ scripcode]
+where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
+
+),
+
+
+CTE1 as (
+
+ select m8.[ scripcode],
+ 
+ case when tf.FNOIND ='IND' then 20 
+ else 25 
+ end as 'mxc'
+from marginreport m8
+left   join tokeninfo tf on m8.[ scripcode] = tf.TOKEN 
+inner  join [dbo].[NSEM] ns on m8.[ scripcode] = ns.Token
+where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
+ ),
+
+ CTE2 as (
+
+ Select m9.[ scripcode],
+  case when c1.mxc > I_M then c1.mxc
+ when I_M > c1.mxc then I_M
+ else 25 
+
+end as 'MAXCAT'
+ from marginreport m9
+left   join tokeninfo tf on m9.[ scripcode] = tf.TOKEN 
+inner  join [dbo].[NSEM] ns on m9.[ scripcode] = ns.Token
+inner join CTE1 c1 on m9.[ scripcode] = c1.[ scripcode]
+inner join imvalue im on m9.[ scripcode] = im.[ scripcode]
+where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
+
+ ),
+
+  CTE3 as (
+ 
+ Select m10.[ scripcode],
+ 
+ case when FNOIND = 'IND' and MAXCAT between 15 and 99 then m10.[ Category1]
+when FNOIND = 'FNO' and MAXCAT between 25 and 99 then m10.[ Category1]
+when FNOIND = NULL and MAXCAT between 33 and 99 then m10.[ Category1]
+when MAXCAT > 99 then m10.[ Category1]
+else m10.[ Category1]
+end as 'CAT1NEW'
+ from marginreport m10
+left   join tokeninfo tf on m10.[ scripcode] = tf.TOKEN 
+inner  join [dbo].[NSEM] ns on m10.[ scripcode] = ns.Token
+inner join CTE2 c2 on m10.[ scripcode] = c2.[ scripcode]
+where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
+ 
+ )
+
 --case when 
 --mx.maxvalues> v.[var+el+adii] and mx.maxvalues > f.FNOMAR then mx.maxvalues
 --when v.[var+el+adii] > mx.maxvalues and v.[var+el+adii] > f.FNOMAR then v.[var+el+adii]
@@ -124,7 +214,8 @@ where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
 --when m.[ Category] ='E' and m.[ Category] like 'E%' then 100
 --else 38
 --end as 'MAXIUMVALUE',--=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),
-select    ROW_NUMBER() over (Partition by m.ISINNO order by tf.FNOIND) as 'rownn',
+select distinct  
+--ROW_NUMBER() over (Partition by m.ISINNO order by tf.FNOIND) as 'rownn',
 tf.FNOIND as 'FNOIND',Rtrim(m.[ Category1]) as 'CAT_1',
 m.ISINNO,m.[ scripcode] as 'scripcode',
 Rtrim([ Scrip_Name])+ ns.Series as 'Symbol Series',
@@ -181,17 +272,18 @@ sp.[SPANMgn%] ,
 sp.[ExpMgn%],
 sp.[AddExpMgn%],
 f.FNOMAR,--=(Y1+Z1+AA1)*100
-case when v.[var+el+adii] > mx.maxvalues and v.[var+el+adii] > f.FNOMAR then v.[var+el+adii]
-when mx.maxvalues> v.[var+el+adii] and mx.maxvalues > f.FNOMAR then mx.maxvalues
-when  f.FNOMAR > v.[var+el+adii]and  f.FNOMAR >mx.maxvalues then  f.FNOMAR
-when m.[ Category] ='C' and m.[ Category] like 'C%' then 50
-when m.[ Category] ='D' and m.[ Category] like 'D%' then 100
-when m.[ Category] ='E' and m.[ Category] like 'E%' then 100
-else v.[var+el+adii]
-end as 'MAXIUMVALUE',--=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),0)
+--case when v.[var+el+adii] > mx.maxvalues and v.[var+el+adii] > f.FNOMAR then v.[var+el+adii]
+--when mx.maxvalues> v.[var+el+adii] and mx.maxvalues > f.FNOMAR then mx.maxvalues
+--when  f.FNOMAR > v.[var+el+adii]and  f.FNOMAR >mx.maxvalues then  f.FNOMAR
+--when m.[ Category] ='C' and m.[ Category] like 'C%' then 50
+--when m.[ Category] ='D' and m.[ Category] like 'D%' then 100
+--when m.[ Category] ='E' and m.[ Category] like 'E%' then 100
+--else v.[var+el+adii]
+--end as 'MAXIUMVALUE',--=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),0)
 --Rtrim(m.[ Category]) as 'NewCAT',
+mxm.MAXIUMVALUE,c.NEWCAT,
 bs.ScripCode as 'BSECode',
-bs.ScripId as 'scripNameBSE',
+bs.ScripId as 'scripNameBSE',c.NEWCAT,c2.MAXCAT,c3.CAT1NEW,
 im.I_M,--for a,b,q ( var+elm+5) , for C,D,E(var + elm+Addi+5)
 --case when im.I_M > mxc.maxcat then ceiling( im.I_M) when 
 --mxc.maxcat > im.I_M then round(mxc.maxcat,0)
@@ -199,12 +291,16 @@ im.I_M,--for a,b,q ( var+elm+5) , for C,D,E(var + elm+Addi+5)
 --end as 'MAXCAT',--=ROUNDUP(MAX(AH1,IF(A1="IND",20,25)),0)
 --Rtrim(m.[ Category1]) as 'NEWCAT1',
 case when sd.F23 in (11,12,13,14,15,16,20,21,22,33) then sd.F23 else ''end as 'ASM FLAG'
-into  #temp1
+--into  #temp1
 from varvalues v inner join fnovalues f on v.[ scripcode] = f.[ scripcode]
 inner join maxvalue mx on v.[ scripcode] = mx.[ scripcode]
 inner join imvalue im on v.[ scripcode] = im.[ scripcode]
 inner join maxcatnew mxc on v.[ scripcode] = mxc.[ scripcode]
 --inner join AVERAGEs avgs on v.[ scripcode] = avgs.[ scripcode]
+inner join maximummvalue mxm on v.[ scripcode] =mxm.[ scripcode]
+inner join CTE c on v.[ scripcode] = c.[ scripcode]
+inner join CTE2 c2 on v.[ scripcode] = c2.[ scripcode]
+inner join CTE3 c3 on v.[ scripcode] = c3.[ scripcode]
 inner join  marginreport m on v.[ scripcode]  = m.[ scripcode]
 left     join tokeninfo tf on m.[ scripcode] = tf.TOKEN 
 inner  join [dbo].[NSEM] ns on m.[ scripcode] = ns.Token
@@ -218,9 +314,9 @@ left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','B
 inner join VARreport vr on m.ISINNO = vr.ISINNO
 left join spanreport sp on m.[ Scrip_Name] = sp.Symbol
 left  join   BSEM bs on m.ISINNO = bs.ISIN 
-where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ') and 
+where ns.series not in ('BE','BO','BZ','BT','IT','SM','SG','ST','SZ') and 
 
-vr.series not in ('BE','BO','BL','BZ','BT','IT','SM','SG','ST','SZ') 
+vr.series not in ('BE','BO','BZ','BT','IT','SM','SG','ST','SZ') 
 --and ns.Series in ('GB')
 --and m.ISINNO = 'INE548C01032'
 --and tf.FNOIND ='FNO'
@@ -228,90 +324,87 @@ order by  tf.FNOIND desc ;
 
 
 
-with CTE as (
+--with CTE as (
 
-select t.scripcode ,
-case when FNOIND = 'IND' and MAXIUMVALUE between 15 and 99 then CAT
-when FNOIND = 'FNO' and MAXIUMVALUE between 25 and 99 then CAT
-when FNOIND = NULL and MAXIUMVALUE between 33 and 99 then CAT
-when MAXIUMVALUE > 99 then CAT
-else CAT
-end as 'NEWCAT'
+--select t.scripcode ,
+--case when FNOIND = 'IND' and MAXIUMVALUE between 15 and 99 then CAT
+--when FNOIND = 'FNO' and MAXIUMVALUE between 25 and 99 then CAT
+--when FNOIND = NULL and MAXIUMVALUE between 33 and 99 then CAT
+--when MAXIUMVALUE > 99 then CAT
+--else CAT
+--end as 'NEWCAT'
 
-from #temp1 t 
-),
+--from #temp1 t 
+--),
 
-CTE1 as (
+--CTE1 as (
 
- select t.scripcode , 
+-- select t.scripcode , 
  
- case when t.FNOIND ='IND' then 20 
- else 25 
- end as 'mxc'
- from #temp1 t 
- ),
+-- case when t.FNOIND ='IND' then 20 
+-- else 25 
+-- end as 'mxc'
+-- from #temp1 t 
+-- ),
 
- CTE2 as (
+-- CTE2 as (
 
- Select t1.scripcode,
-  case when c1.mxc > I_M then c1.mxc
- when I_M > c1.mxc then I_M
- else 25 
+-- Select t1.scripcode,
+--  case when c1.mxc > I_M then c1.mxc
+-- when I_M > c1.mxc then I_M
+-- else 25 
 
-end as 'MAXCAT'
-  from #temp1 t1 inner join CTE1 c1 on t1.scripcode = c1.scripcode
- ),
+--end as 'MAXCAT'
+--  from #temp1 t1 inner join CTE1 c1 on t1.scripcode = c1.scripcode
+-- ),
 
- CTE3 as (
+-- CTE3 as (
  
- Select   t.scripcode,
+-- Select t.scripcode,
  
- case when FNOIND = 'IND' and MAXCAT between 15 and 99 then CAT_1
-when FNOIND = 'FNO' and MAXCAT between 25 and 99 then CAT_1
-when FNOIND = NULL and MAXCAT between 33 and 99 then CAT_1
-when MAXCAT > 99 then CAT_1
-else CAT_1
-end as 'CAT1NEW'
-from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
+-- case when FNOIND = 'IND' and MAXCAT between 15 and 99 then CAT_1
+--when FNOIND = 'FNO' and MAXCAT between 25 and 99 then CAT_1
+--when FNOIND = NULL and MAXCAT between 33 and 99 then CAT_1
+--when MAXCAT > 99 then CAT_1
+--else CAT_1
+--end as 'CAT1NEW'
+--from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
  
- )
+-- )
 
-select     
-FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
-,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
-[SPANMgn%],[ExpMgn%],[AddExpMgn%],FNOMAR,ceiling(MAXIUMVALUE) as MAXIMUMVALUE,
-c.NEWCAT,
-t.BSECode,t.scripNameBSE
-,I_M,
-ceiling(c2.MAXCAT) as MAXCAT,
-c3.CAT1NEW,
-[ASM FLAG]
-from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
-inner join CTE c on t.scripcode = c.scripcode
-inner join CTE3 c3 on t.scripcode = c3.scripcode
-where 
-rownn   = 1 
---and scripcode in ( '2987','13517')
-
---and FNOIND is NULL 
---and ISINNO = 'IN0020190388'
-group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
-,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
-[SPANMgn%],[ExpMgn%],[AddExpMgn%],FNOMAR,MAXIUMVALUE,
-c.NEWCAT,
-t.BSECode,t.scripNameBSE
-,I_M,
-c2.MAXCAT,
-c3.CAT1NEW,
-[ASM FLAG]
+select   *
+from #temp1 t where 
+rownn  =1 
 order by FNOIND desc 
+--, case when FNOIND = 'IND' and MAXIUMVALUE between 15 and 99 then CAT
+--when FNOIND = 'FNO' and MAXIUMVALUE between 25 and 99 then CAT
+--when FNOIND = NULL and MAXIUMVALUE between 33 and 99 then CAT
+--when MAXIUMVALUE > 99 then CAT
+--else CAT
+--end as 'MAXCAT'
+--c.NEWCAT,
+--t.BSECode,t.scripNameBSE,c.NEWCAT
+--,I_M,
+--c2.MAXCAT,
+--c3.CAT1NEW
+---- case when c1.mxc > I_M then c1.mxc
+-- when I_M > c1.mxc then I_M
+-- else 25 
 
-select * from #isincheck
+--end as 'MAXCAT'
 
-select ISINNo from #isincheck
-except
-select F3 from isinsc 
+
+
+--inner join CTE2 c2 on t.scripcode = c2.scripcode
+--inner join CTE c on t.scripcode = c.scripcode
+--inner join CTE3 c3 on t.scripcode = c3.scripcode
+----inner join CTE1 c1 on t.scripcode = c1.scripcode
  
+--and scripcode in ( '2987','13517')
+--and FNOIND is NULL 
+--and ISINNO = 'INE628A01036'
+
+
 --=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),0)
 
 --x1 = var+adii+elm
