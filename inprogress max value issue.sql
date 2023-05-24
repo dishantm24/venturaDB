@@ -61,19 +61,20 @@ select   FNOIND, m1.[ scripcode], case
 when tf.FNOIND  ='IND' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
 when tf.FNOIND  ='FNO' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
 when tf.FNOIND is null  AND( m1.[ Category] in ('A','B','Q')
- OR m1.[ Category] like 'A%'  OR m1.[ Category] like 'B%' 
- OR m1.[ Category] like 'Q%')
-then ceiling ( (vr.VAR + vr.ELM*5 + vr.ADDI) + 5 )
-when tf.FNOIND is null  and m1.[ Category] in ('C','D','E')
- OR m1.[ Category] like 'C%'  
-then ceiling ( (vr.VAR + vr.ELM + vr.ADDI) + 5 )
+OR m1.[ Category] like 'A%'  
+OR m1.[ Category] like 'B%' 
+ OR m1.[ Category] like 'Q%') 
+ then ceiling ( (vr.VAR + vr.ELM*5 + vr.ADDI) + 5 )
+when tf.FNOIND is null  and( m1.[ Category] in ('C','D','E')
+ OR m1.[ Category] like 'C%') 
+ then ceiling ( (vr.VAR + vr.ELM + vr.ADDI) + 5 )
 else ceiling (( vr.VAR + vr.ELM + vr.ADDI)+5)
 end as 'var+el+adii' from marginreport m1 
 left   join tokeninfo tf on m1.[ scripcode] = tf.TOKEN 
 inner  join [dbo].[NSEM] ns on m1.[ scripcode] = ns.Token
 inner join VARreport vr on m1.ISINNO = vr.ISINNO
  where ns.series not in ('BE','BO','BZ','BT','IT','SM','SG','ST','SZ') 
- --AND m1.ISINNO = 'INE002L01015'
+ --AND m1.ISINNO = 'INE186A01019'
  group by FNOIND,m1.[ scripcode],VAR,ELM,ADDI, m1.[ Category]
 ),
 
@@ -91,23 +92,24 @@ select   m3.[ scripcode],FNOIND,
 case when 
 FNOIND = 'IND' then 25 when 
 FNOIND = 'FNO' then 30 
-else 38
+when FNOIND is NULL then 38 
+else ''
 end as 'maxvalues'
 from marginreport m3 
 left   join tokeninfo tf on m3.[ scripcode] = tf.TOKEN 
 inner  join [dbo].[NSEM] ns on m3.[ scripcode] = ns.Token
 where ns.series not in ('BE','BZ','BT','BO','IT','SM','SG','ST','SZ')
-
-group by m3.[ scripcode],FNOIND
+--and ISINNO = 'INE186A01019'
+group by m3.[ scripcode],FNOIND,m3.[ Category]
 
 ),
 
 imvalue as (select  m4.[ scripcode],
 Case
-when m4.[ Category] = 'A' and m4.[ Category] like 'A%' then (vr.VAR + vr.ELM + 5) 
-when m4.[ Category] = 'B' and m4.[ Category] like 'B%' then (vr.VAR + vr.ELM + 5) 
-when m4.[ Category] = 'Q' and m4.[ Category] like 'Q%' then (vr.VAR + vr.ELM + 5) 
-when m4.[ Category] = 'C' and m4.[ Category] like 'C%' then (vr.VAR + vr.ELM + vr.ADDI+  5)
+when m4.[ Category] = 'A' OR m4.[ Category] like 'A%' then (vr.VAR + vr.ELM + 5) 
+when m4.[ Category] = 'B' OR m4.[ Category] like 'B%' then (vr.VAR + vr.ELM + 5) 
+when m4.[ Category] = 'Q' OR m4.[ Category] like 'Q%' then (vr.VAR + vr.ELM + 5) 
+when m4.[ Category] = 'C' OR m4.[ Category] like 'C%' then (vr.VAR + vr.ELM + vr.ADDI+  5)
 when m4.[ Category] = 'D'  then (vr.VAR + vr.ELM + vr.ADDI+  5)
 when m4.[ Category] = 'E'  then (vr.VAR + vr.ELM + vr.ADDI+  5)
 else (vr.VAR + vr.ELM + vr.ADDI+  5)
@@ -175,12 +177,18 @@ sp.[SPANMgn%] ,
 sp.[ExpMgn%],
 sp.[AddExpMgn%],
 f.FNOMAR,--=(Y1+Z1+AA1)*100
+
 case when v.[var+el+adii] > mx.maxvalues and v.[var+el+adii] > f.FNOMAR then v.[var+el+adii]
 when mx.maxvalues> v.[var+el+adii] and mx.maxvalues > f.FNOMAR then mx.maxvalues
 when  f.FNOMAR > v.[var+el+adii]and  f.FNOMAR >mx.maxvalues then  f.FNOMAR
-when m.[ Category] ='C' and m.[ Category] like 'C%' then 50
-when m.[ Category] ='D' and m.[ Category] like 'D%' then 100
-when m.[ Category] ='E' and m.[ Category] like 'E%' then 100
+when m.[ Category] ='C' then 50
+when m.[ Category] = 'C10' then 60
+when m.[ Category] = 'C20' then 70
+when m.[ Category] = 'C25' then 75
+when  m.[ Category] = 'C30' then 80 
+when m.[ Category] = 'C49' then 99
+when tf.FNOIND IS NULL and [ Category] ='D'  then 100
+when tf.FNOIND IS NULL and m.[ Category] ='E'  then 100
 else mx.maxvalues
 end as 'MAXIUMVALUE',--=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),0)
 --Rtrim(m.[ Category]) as 'NewCAT',
@@ -223,15 +231,18 @@ select t.scripcode ,
 case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 then CAT
 when FNOIND = 'FNO' and ceiling(MAXIUMVALUE) between 25 and 99 then CAT
 when FNOIND Is null  and ceiling(MAXIUMVALUE) between 33 and 99 then CAT
-when FNOIND is null  and t.CAT not in ('A','B','Q') and t.CAT not like 'A%'
-and t.CAT not like 'B%' and t.CAT not like 'Q%' and c.Base = 'C'
-and ceiling(MAXIUMVALUE) between  50 and 99 then  CAT
-when FNOIND is null  and t.CAT not in ('A','B','Q') and t.CAT not like 'A%'
-and t.CAT not like 'B%' and t.CAT not like 'Q%' and d.Base = 'D'
-and ceiling(MAXIUMVALUE) between  100 and 115 then  CAT
-when FNOIND is null  and t.CAT not in ('A','B','Q') and t.CAT not like 'A%'
-and t.CAT not like 'B%' and t.CAT not like 'Q%' and e.Base ='E'
-and ceiling(MAXIUMVALUE) = 100  then CAT
+
+when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
+and ceiling(MAXIUMVALUE) between  50 and 99) then  CAT
+
+when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
+and ceiling(MAXIUMVALUE) between  100 and 115) then  CAT
+
+when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
+and ceiling(MAXIUMVALUE) = 100 ) then CAT
 else CAT
 end as 'NEWCAT'
 
@@ -272,15 +283,18 @@ end as 'MAXCAT'
  case when FNOIND = 'IND' and ceiling(MAXCAT) between 15 and 99 then CAT_1
 when FNOIND = 'FNO' and ceiling(MAXCAT) between 25 and 99 then CAT_1
 when FNOIND = NULL and ceiling(MAXCAT) between 33 and 99 then CAT_1
-when FNOIND is null  and t.CAT not in ('A','B','Q') and t.CAT not like 'A%'
-and t.CAT not like 'B%' and t.CAT not like 'Q%' and c.Base = 'C'
-and ceiling(MAXCAT) between  50 and 99 then  CAT_1
-when FNOIND is null  and t.CAT not in ('A','B','Q') and t.CAT not like 'A%'
-and t.CAT not like 'B%' and t.CAT not like 'Q%' and d.Base = 'D'
-and ceiling(MAXCAT) between  100 and 115 then  CAT_1
-when FNOIND is null  and t.CAT not in ('A','B','Q') and t.CAT not like 'A%'
-and t.CAT not like 'B%' and t.CAT not like 'Q%' and e.Base ='E'
-and ceiling(MAXCAT) = 100  then  CAT_1
+
+when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
+and ceiling(MAXCAT) between  50 and 99 )then  CAT_1
+
+when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
+and ceiling(MAXCAT) between  100 and 115 )then  CAT_1
+
+when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
+and ceiling(MAXCAT) = 100)  then  CAT_1
 else CAT_1
 end as 'CAT1NEW'
 from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
@@ -307,14 +321,14 @@ t.BSECode,t.scripNameBSE
 ceiling(c2.MAXCAT) as MAXCAT,
 c3.CAT1NEW,
 [ASM FLAG]
-
+into #final
 from 
 #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
 inner join CTE c on t.scripcode = c.scripcode
 inner join CTE3 c3 on t.scripcode = c3.scripcode
 where 
 rownn   = 1  
---and ISINNO = 'INE776C01039'
+--and ISINNO = 'IN0020160043'
 group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
 ,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
 [SPANMgn%]
@@ -328,12 +342,15 @@ c3.CAT1NEW,
 
 order by FNOIND desc
 
+drop table #final
 
+select [VAR],ELM,ADDI,[var+el+adii],MAXIMUMVALUE,* from #final where CAT = 'D'  or CAT like 'C%'
 
-select * from #temp1
+select  f.MAXIMUMVALUE ,m.Max from #final f  inner join mainsct m on 
+f.ISINNO = m.ISINNO
+where   f.MAXIMUMVALUE <> m.Max
 
-
-
+select * from mainsct
 --=ROUNDUP(MAX(X1,IF(A1="IND",25,IF(A1="FNO",30,38)),AB1),0)
 
 --x1 = var+adii+elm
