@@ -353,15 +353,22 @@ FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T
 ISNULL ([SPANMgn%],0) as [SPANMgn%]
 ,ISNULL ([ExpMgn%],0) as [ExpMgn%]
 ,ISNULL ([AddExpMgn%],0) as [AddExpMgn%]
-,isnull (FNOMAR,0) as FNOMAR
-,ceiling(MAXIUMVALUE) as MAXIMUMVALUE,
+,isnull (FNOMAR,0) as FNOMAR,
+Case when MAXIUMVALUE > 100 then 100 
+else ceiling(MAXIUMVALUE)
+end as 'MAXIUMVALUE',
+--,ceiling(MAXIUMVALUE) as MAXIMUMVALUE,
 c.NEWCAT,
 t.BSECode,t.scripNameBSE
 ,I_M,
-ceiling(c2.MAXCAT) as MAXCAT,
+--if(c2.MAXCAT>100,c2.MAXCAT,c2.MAXCAT),
+Case when c2.MAXCAT > 100 then 100 
+else ceiling(c2.MAXCAT)
+end as 'MAXCAT',
+--ceiling(c2.MAXCAT) as MAXCAT,
 c3.CAT1NEW,
 [ASM FLAG]
-into #final
+--into #final
 from 
 #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
 inner join CTE c on t.scripcode = c.scripcode
@@ -382,16 +389,20 @@ c3.CAT1NEW,
 
 order by FNOIND desc
 
+drop table #final
+
+--select * from #final where MAXIUMVALUE <= 100 
 
 
---select [VAR],ELM,ADDI,[var+el+adii],MAXIMUMVALUE,* from #final where CAT = 'D'  or CAT like 'C%'
 
-select  f.FNOIND,f.FNOMAR,f.[var+el+adii],f.CAT,f.MAXIMUMVALUE ,[FNO Mar],m.[VAR+XEML+Addi],m.Max ,f.ISINNO,f.ISINNO from #final f inner join mainsct m on 
-f.ISINNO = m.ISINNO
-where    f.MAXIMUMVALUE <> m.[Max]
+----select [VAR],ELM,ADDI,[var+el+adii],MAXIMUMVALUE,* from #final where CAT = 'D'  or CAT like 'C%'
+
+--select  f.FNOIND,f.FNOMAR,f.[var+el+adii],f.CAT,f.MAXIMUMVALUE ,[FNO Mar],m.[VAR+XEML+Addi],m.Max ,f.ISINNO,f.ISINNO from #final f inner join mainsct m on 
+--f.ISINNO = m.ISINNO
+--where    f.MAXIMUMVALUE <> m.[Max]
 
 
-select * from #final where  ISINNO ='INE253B01015'
+--select if(c2.MAXCAT>100,c2.MAXCAT,c2.MAXCAT) from #final where  ISINNO ='INE253B01015'
 --and f.scripcode = 1624
 
 --select * from mainsct
