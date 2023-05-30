@@ -1,4 +1,5 @@
 --Select * from CASH1 ca left join CUR1 cu on ca.ClntId = cu.ClntId
+
 --Delete the unwanted Records 
 --delete from CASH1 where ValtnDt = 'ValtnDt'
 --delete from CASH2 where ValtnDt = 'ValtnDt'
@@ -112,9 +113,9 @@ CUR as (
 
 Select CRAM1,CRAM2,CRAM3,CRAM4, case 
 
-when @max1  > @max2 OR @max1> @max3 OR @max1>@max4 then cuid1
-when (@max2 > @max1 OR @max2> @max3 OR @max2 > @max4) then cuid2
-when (@max3 > @max1 OR @max3> @max2 OR @max3 > @max4) then cuid3
+when @max1  > @max2  then cuid1
+when (@max2 > @max3 ) then cuid2
+when (@max3 > @max4 ) then cuid3
 else cuid4
 end as 'FinalCUR'
 from #cur
@@ -130,9 +131,9 @@ NCDX as
 Select 
 NCAM1,NCAM2,NCAM3,NCAM4,
 Case 
-when @max5 > @max6 OR @max5 > @max7 OR @max5 > @max8 then ncid1
-when @max6 > @max5 OR @max6 > @max7 OR @max6 > @max8 then ncid2
-when @max7 > @max6 OR @max7 > @max5 OR @max7 > @max8 then ncid3
+when @max5 > @max6  then ncid1
+when @max6 > @max7  then ncid2
+when @max7 > @max8 then ncid3
 Else ncid4
 END as 'FINALNCDX'
 from #ncdx
@@ -191,12 +192,12 @@ Select Client_Code from NCDX3
 union
 Select Client_Code from NCDX4
 
-),
 
+)
+,
+CTE1 AS (
 
- CTE1
- AS (
-select  cte.ClntId
+select  cte.ClntId as ClientId
 ,ISNULL(CAM1,0) AS CAM1,ISNULL(CAM2,0) AS CAM2,ISNULL(CAM3,0) AS CAM3,ISNULL(CAM4,0) AS CAM4,
 ISNULL(FAM1,0) AS FAM1,ISNULL(FAM2,0) AS FAM2,ISNULL(FAM3,0) AS FAM3,ISNULL(FAM4,0) AS FAM4,
 ISNULL(CRAM1,0) AS CRAM1,ISNULL(CRAM2,0) AS CRAM2,ISNULL(CRAM3,0) AS CRAM3,ISNULL(CRAM4,0) AS CRAM4,
@@ -209,11 +210,42 @@ full outer  join MCX mcx on cte.ClntId = mcx.mid4
 full outer join CUR cur on cte.ClntId = cur.FinalCUr
 full outer join NCDX ncdx on cte.ClntId = ncdx.FINALNCDX
 where cte.ClntId is not null 
+
+
 Group by cte.ClntId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
 ,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4
 
+
+)
+,
+
+CTE2 as (
+
+Select Distinct  ClientId
+,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
+ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
+ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
+ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
+ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4'
+
+ from CTE c1 inner join CTE1 c2 on c1.ClntId = c2.ClientId 
+
 )
 
-select * FROM CTE1
+Select ClientId
+,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
+ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
+ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
+ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
+ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4',
 
+Case when TotalPeak1 > TotalPeak2 then TotalPeak1
+when TotalPeak2 > TotalPeak3 then TotalPeak2
+when TotalPeak3 > TotalPeak4 then TotalPeak3
+Else TotalPeak4
+End as 'MAX'
 
+ from CTE2
+ where ClientId = '080184'
