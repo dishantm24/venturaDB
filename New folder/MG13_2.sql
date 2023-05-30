@@ -25,7 +25,49 @@
 --delete from COM3 where ValtnDt = 'ValtnDt'
 --delete from COM4 where ValtnDt = 'ValtnDt'
 
+
 --Main Code
+DROP TABLE	IF EXISTS #cur;
+
+DROP TABLE	IF EXISTS #ncdx;
+DECLARE @max1 as INT ,@max2 as INT,@max3 as INT ,@max4 as INT;
+SET @max1  = (Select count(*) from CUR1)--268
+SET @max2  = (Select count(*)  from CUR2)--271
+SET @max3  = (Select count(*) from CUR3)--271
+SET @max4  = (Select count(*)  from CUR4)--269
+
+DECLARE @max5 as INT ,@max6 as INT,@max7 as INT ,@max8 as INT;
+SET @max5  =(Select count(*) from NCDX1)
+SET @max6  =(Select count(*) from NCDX2)
+SET @max7  =(Select count(*) from NCDX3)
+SET @max8  =(Select count(*) from NCDX4)
+
+
+
+
+select 
+cu1.ClntId as cuid1,cu2.ClntId as cuid2,cu3.ClntId as cuid3,cu4.ClntId as cuid4
+, cu1.IntraDayMrgnCall as CRAM1,cu2.IntraDayMrgnCall as CRAM2, cu3.IntraDayMrgnCall
+as CRAM3 ,cu4.IntraDayMrgnCall as 'CRAM4'
+into #cur
+from CUR4 cu4
+full outer join CUR1 cu1 on cu4.ClntId = cu1.ClntId
+full outer join CUR2 cu2 on cu4.ClntId = cu2.ClntId
+full outer join CUR3 cu3 on cu4.ClntId = cu3.ClntId;
+
+
+
+select nc1.Client_Code as ncid1,nc2.Client_Code as ncid2 , nc3.Client_Code as ncid3,nc4.Client_Code as ncid4
+,(convert(FLOAT,nc1.Initial_Margin) + convert (FLOAT, nc1.ELM_Margin )) as NCAM1
+,(convert(FLOAT,nc2.Initial_Margin) + convert (FLOAT, nc2.ELM_Margin )) as NCAM2
+,(convert(FLOAT,nc3.Initial_Margin) + convert (FLOAT, nc3.ELM_Margin )) as NCAM3
+,(convert(FLOAT,nc4.Initial_Margin) + convert (FLOAT, nc4.ELM_Margin )) as NCAM4
+into #ncdx
+from 
+NCDX4 nc4
+full outer join NCDX1 nc1 on nc4.Client_Code = nc1.Client_Code
+full outer join NCDX3 nc3 on nc4.Client_Code = nc3.Client_Code
+full outer join NCDX2 nc2 on nc4.Client_Code = nc2.Client_Code;
 
 with 
 
@@ -33,9 +75,9 @@ CASH as (
 select ca1.ClntId as Cid1 ,ca2.ClntId as Cid2 , ca3.ClntId as Cid3,ca4.ClntId as Cid4 
 ,ca1.TtlMrgnAmt as CAM1 ,ca2.TtlMrgnAmt as CAM2 ,ca3.TtlMrgnAmt as CAM3,ca4.TtlMrgnAmt as CAM4
 from CASH4 ca4
-left  join CASH3 ca3 on ca4.ClntId = ca3.ClntId
-left join CASH2 ca2 on ca4.ClntId = ca2.ClntId
-left join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
+full outer   join CASH3 ca3 on ca4.ClntId = ca3.ClntId
+full outer join CASH2 ca2 on ca4.ClntId = ca2.ClntId
+full outer join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
 ),
 
 FNO as (
@@ -43,9 +85,9 @@ FNO as (
 Select fn1.ClntId as fid1,fn2.ClntId as fid2,fn3.ClntId as fid3,fn4.ClntId as fid4
 ,fn1.IntraDayMrgnCall as FAM1,fn2.IntraDayMrgnCall as FAM2,fn3.IntraDayMrgnCall as FAM3,fn4.IntraDayMrgnCall as FAM4
 from FNO4 fn4
-left join FNO3 fn3 on fn4.ClntId =fn3.ClntId
-left join FNO2 fn2 on fn4.ClntId = fn2.ClntId
-left join FNO1 fn1 on fn4.ClntId = fn1.ClntId
+full outer join FNO3 fn3 on fn4.ClntId =fn3.ClntId
+full outer join FNO2 fn2 on fn4.ClntId = fn2.ClntId
+full outer join FNO1 fn1 on fn4.ClntId = fn1.ClntId
 
 ),
 
@@ -60,20 +102,24 @@ Select mc1.column5 as mid1
 ,mc3.column9 as MAM3
 ,mc4.column9 as MAM4
 from MCX4 mc4
-left join MCX3 mc3 on mc4.column5 = mc3.column5
-left join MCX2 mc2 on mc4.column5 = mc2.column5
-left join MCX1 mc1 on mc4.column5 = mc1.column5
+full outer join MCX3 mc3 on mc4.column5 = mc3.column5
+full outer  join MCX2 mc2 on mc4.column5 = mc2.column5
+full outer join MCX1 mc1 on mc4.column5 = mc1.column5
 
 ),
 
 CUR as (
 
-select cu1.ClntId as cuid1,cu2.ClntId as cuid2,cu3.ClntId as cuid3,cu4.ClntId as cuid4
-, cu1.IntraDayMrgnCall as CRAM1,cu2.IntraDayMrgnCall as CRAM2, cu3.IntraDayMrgnCall as CRAM3 ,cu4.IntraDayMrgnCall as 'CRAM4'
-from CUR1 cu1
-full outer join CUR2 cu2 on cu1.ClntId = cu2.ClntId
-full outer join CUR3 cu3 on cu2.ClntId = cu3.ClntId
-full outer join CUR4 cu4 on cu3.ClntId = cu4.ClntId
+Select CRAM1,CRAM2,CRAM3,CRAM4, case 
+
+when @max1  > @max2 OR @max1> @max3 OR @max1>@max4 then cuid1
+when (@max2 > @max1 OR @max2> @max3 OR @max2 > @max4) then cuid2
+when (@max3 > @max1 OR @max3> @max2 OR @max3 > @max4) then cuid3
+else cuid4
+end as 'FinalCUR'
+from #cur
+
+
 
 
 ),
@@ -81,20 +127,15 @@ full outer join CUR4 cu4 on cu3.ClntId = cu4.ClntId
 NCDX as 
 (
 
-select nc1.Client_Code as ncid1,nc2.Client_Code as ncid2 , nc3.Client_Code as ncid3,nc4.Client_Code as ncid4
-,(convert(FLOAT,nc1.Initial_Margin) + convert (FLOAT, nc1.ELM_Margin )) as NCAM1
-,(convert(FLOAT,nc2.Initial_Margin) + convert (FLOAT, nc2.ELM_Margin )) as NCAM2
-,(convert(FLOAT,nc3.Initial_Margin) + convert (FLOAT, nc3.ELM_Margin )) as NCAM3
-,(convert(FLOAT,nc4.Initial_Margin) + convert (FLOAT, nc4.ELM_Margin )) as NCAM4
-
---,(nc2.Initial_Margin + nc2.ELM_Margin) as NCAM2
---,(nc3.Initial_Margin + nc3.ELM_Margin) as NCAM3
---,(nc4.Initial_Margin + nc4.ELM_Margin) as NCAM4
-from 
-NCDX1 nc1
-full outer join NCDX2 nc2 on nc1.Client_Code = nc2.Client_Code
-full outer join NCDX3 nc3 on nc2.Client_Code = nc3.Client_Code
-full outer join NCDX4 nc4 on nc3.Client_Code = nc4.Client_Code
+Select 
+NCAM1,NCAM2,NCAM3,NCAM4,
+Case 
+when @max5 > @max6 OR @max5 > @max7 OR @max5 > @max8 then ncid1
+when @max6 > @max5 OR @max6 > @max7 OR @max6 > @max8 then ncid2
+when @max7 > @max6 OR @max7 > @max5 OR @max7 > @max8 then ncid3
+Else ncid4
+END as 'FINALNCDX'
+from #ncdx
 )
 
 ,
@@ -105,22 +146,74 @@ from COM1 cm1
 full outer join COM2 cm2 on cm1.ClntId = cm2.ClntId
 full outer join COM3 cm3 on cm2.ClntId = cm3.ClntId
 full outer join COM4 cm4 on cm3.ClntId = cm4.ClntId
+),
+
+
+
+CTE as (
+select ClntId from CASH1 
+union 
+select ClntId from CASH2
+union 
+select ClntId from CASH3
+union 
+select ClntId from CASH4
+union 
+Select ClntId from FNO1
+union 
+Select ClntId from FNO2
+union 
+Select ClntId from FNO3
+union 
+Select ClntId from FNO4
+union 
+Select column5 from MCX1
+union 
+Select column5 from MCX2
+union 
+Select column5 from MCX3
+union 
+Select column5 from MCX4
+union 
+Select ClntId from CUR1
+union 
+Select ClntId from CUR2
+union 
+Select ClntId from CUR3
+union 
+Select ClntId from CUR4
+union 
+Select Client_Code from NCDX1
+union
+Select Client_Code from NCDX2
+union
+Select Client_Code from NCDX3
+union
+Select Client_Code from NCDX4
+
+),
+
+
+ CTE1
+ AS (
+select  cte.ClntId
+,ISNULL(CAM1,0) AS CAM1,ISNULL(CAM2,0) AS CAM2,ISNULL(CAM3,0) AS CAM3,ISNULL(CAM4,0) AS CAM4,
+ISNULL(FAM1,0) AS FAM1,ISNULL(FAM2,0) AS FAM2,ISNULL(FAM3,0) AS FAM3,ISNULL(FAM4,0) AS FAM4,
+ISNULL(CRAM1,0) AS CRAM1,ISNULL(CRAM2,0) AS CRAM2,ISNULL(CRAM3,0) AS CRAM3,ISNULL(CRAM4,0) AS CRAM4,
+ISNULL(MAM1,0) AS MAM1,ISNULL(MAM2,0) AS MAM2,ISNULL(MAM3,0) AS MAM3,ISNULL(MAM4,0) AS MAM4,
+ISNULL(NCAM1,0) AS NCAM1,ISNULL(NCAM2,0) AS NCAM2,ISNULL(NCAM3,0) AS NCAM3,ISNULL(NCAM4,0) AS NCAM4
+from CTE cte
+full outer  join  CASH cash on cte.ClntId = cash.Cid4
+full outer join FNO fno on cte.ClntId = fno.fid4
+full outer  join MCX mcx on cte.ClntId = mcx.mid4
+full outer join CUR cur on cte.ClntId = cur.FinalCUr
+full outer join NCDX ncdx on cte.ClntId = ncdx.FINALNCDX
+where cte.ClntId is not null 
+Group by cte.ClntId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4
+
 )
 
-select   * from CASH cash
-full outer  join FNO fno on cash.Cid4 = fno.fid4
-full outer join MCX mcx on cash.Cid4 = mcx.mid4
-
-full outer join CUR cur on cash.Cid4 = cur.cuid1 OR cash.Cid4 = cur.cuid2
-OR  cash.Cid4 = cur.cuid3 OR  cash.Cid4 = cur.cuid4
-AND (cur.cuid1 is Not Null OR cur.cuid2 is Not null OR cur.cuid3 is not NULL or cur.cuid4 is not NULL)
-
-full outer join NCDX ncdx on cash.Cid4 = ncdx.ncid1 OR cash.Cid4 = ncdx.ncid2
-OR cash.Cid4 = ncdx.ncid3  OR cash.Cid4 = ncdx.ncid4
-
-full outer join COMD comd on cash.Cid4 = comd.cmid1 Or cash.Cid4 = comd.cmid2 Or 
-cash.Cid4 = comd.cmid3 Or cash.Cid4 = comd.cmid4 
-
-Order by cash.Cid4 desc 
+select * FROM CTE1
 
 
