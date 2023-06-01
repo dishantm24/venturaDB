@@ -53,8 +53,8 @@ into #cur
 from CUR4 cu4
 full outer join CUR1 cu1 on cu4.ClntId = cu1.ClntId
 full outer join CUR2 cu2 on cu4.ClntId = cu2.ClntId
-full outer join CUR3 cu3 on cu4.ClntId = cu3.ClntId
-group by cu1.ClntId,cu2.ClntId,cu3.ClntId,cu4.ClntId,cu1.IntraDayMrgnCall,cu2.IntraDayMrgnCall,cu3.IntraDayMrgnCall,cu4.IntraDayMrgnCall
+full outer join CUR3 cu3 on cu4.ClntId = cu3.ClntId;
+--group by cu1.ClntId,cu2.ClntId,cu3.ClntId,cu4.ClntId,cu1.IntraDayMrgnCall,cu2.IntraDayMrgnCall,cu3.IntraDayMrgnCall,cu4.IntraDayMrgnCall
 
 select nc1.Client_Code as ncid1,nc2.Client_Code as ncid2 , nc3.Client_Code as ncid3,nc4.Client_Code as ncid4
 ,(convert(FLOAT,nc1.Initial_Margin) + convert (FLOAT, nc1.ELM_Margin )) as NCAM1
@@ -66,11 +66,12 @@ from
 NCDX4 nc4
 full outer join NCDX1 nc1 on nc4.Client_Code = nc1.Client_Code
 full outer join NCDX3 nc3 on nc4.Client_Code = nc3.Client_Code
-full outer join NCDX2 nc2 on nc4.Client_Code = nc2.Client_Code
+full outer join NCDX2 nc2 on nc4.Client_Code = nc2.Client_Code;
 
-group by nc1.Client_Code,nc2.Client_Code,nc3.Client_Code,nc4.Client_Code
-,nc1.Initial_Margin,nc1.ELM_Margin,nc2.Initial_Margin,nc2.ELM_Margin
-,nc3.Initial_Margin,nc3.ELM_Margin,nc4.Initial_Margin,nc4.ELM_Margin;
+
+--group by nc1.Client_Code,nc2.Client_Code,nc3.Client_Code,nc4.Client_Code
+--,nc1.Initial_Margin,nc1.ELM_Margin,nc2.Initial_Margin,nc2.ELM_Margin
+--,nc3.Initial_Margin,nc3.ELM_Margin,nc4.Initial_Margin,nc4.ELM_Margin;
 
 with 
 
@@ -81,8 +82,8 @@ from CASH4 ca4
 full outer   join CASH3 ca3 on ca4.ClntId = ca3.ClntId
 full outer join CASH2 ca2 on ca4.ClntId = ca2.ClntId
 full outer join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
-group by ca1.ClntId ,ca2.ClntId  , ca3.ClntId ,ca4.ClntId 
-,ca1.TtlMrgnAmt  ,ca2.TtlMrgnAmt  ,ca3.TtlMrgnAmt ,ca4.TtlMrgnAmt 
+--group by ca1.ClntId ,ca2.ClntId  , ca3.ClntId ,ca4.ClntId 
+--,ca1.TtlMrgnAmt  ,ca2.TtlMrgnAmt  ,ca3.TtlMrgnAmt ,ca4.TtlMrgnAmt 
 ),
 
 FNO as (
@@ -93,9 +94,9 @@ from FNO4 fn4
 full outer join FNO3 fn3 on fn4.ClntId =fn3.ClntId
 full outer join FNO2 fn2 on fn4.ClntId = fn2.ClntId
 full outer join FNO1 fn1 on fn4.ClntId = fn1.ClntId
-group by  fn1.ClntId ,fn2.ClntId ,fn3.ClntId ,fn4.ClntId 
-,fn1.IntraDayMrgnCall ,fn2.IntraDayMrgnCall 
-,fn3.IntraDayMrgnCall ,fn4.IntraDayMrgnCall 
+--group by  fn1.ClntId ,fn2.ClntId ,fn3.ClntId ,fn4.ClntId 
+--,fn1.IntraDayMrgnCall ,fn2.IntraDayMrgnCall 
+--,fn3.IntraDayMrgnCall ,fn4.IntraDayMrgnCall 
 
 ),
 
@@ -107,9 +108,9 @@ Select mc1.column5 as mid1 ,mc2.column5 as mid2,mc3.column5 as mid3,mc4.column5 
 full outer join MCX3 mc3 on mc4.column5 = mc3.column5
 full outer  join MCX2 mc2 on mc4.column5 = mc2.column5
 full outer join MCX1 mc1 on mc4.column5 = mc1.column5
-group by mc1.column5  ,mc2.column5,mc3.column5 ,mc4.column5
-, mc1.column9  ,mc2.column9 ,mc3.column9 
-,mc4.column9 
+--group by mc1.column5  ,mc2.column5,mc3.column5 ,mc4.column5
+--, mc1.column9  ,mc2.column9 ,mc3.column9 
+--,mc4.column9 
 
 ),
 
@@ -202,60 +203,70 @@ Select Client_Code from NCDX4
 CTE1 AS (
 
 select  cte.ClntId as ClientId
-,ISNULL(CAM1,0) AS CAM1,ISNULL(CAM2,0) AS CAM2,ISNULL(CAM3,0) AS CAM3,ISNULL(CAM4,0) AS CAM4,
-ISNULL(FAM1,0) AS FAM1,ISNULL(FAM2,0) AS FAM2,ISNULL(FAM3,0) AS FAM3,ISNULL(FAM4,0) AS FAM4,
-ISNULL(CRAM1,0) AS CRAM1,ISNULL(CRAM2,0) AS CRAM2,ISNULL(CRAM3,0) AS CRAM3,ISNULL(CRAM4,0) AS CRAM4,
-ISNULL(MAM1,0) AS MAM1,ISNULL(MAM2,0) AS MAM2,ISNULL(MAM3,0) AS MAM3,ISNULL(MAM4,0) AS MAM4,
-ISNULL(NCAM1,0) AS NCAM1,ISNULL(NCAM2,0) AS NCAM2,ISNULL(NCAM3,0) AS NCAM3,ISNULL(NCAM4,0) AS NCAM4
+--,ISNULL(CAM1,0) AS CAM1,ISNULL(CAM2,0) AS CAM2,ISNULL(CAM3,0) AS CAM3,ISNULL(CAM4,0) AS CAM4,
+--ISNULL(FAM1,0) AS FAM1,ISNULL(FAM2,0) AS FAM2,ISNULL(FAM3,0) AS FAM3,ISNULL(FAM4,0) AS FAM4,
+--ISNULL(CRAM1,0) AS CRAM1,ISNULL(CRAM2,0) AS CRAM2,ISNULL(CRAM3,0) AS CRAM3,ISNULL(CRAM4,0) AS CRAM4,
+--ISNULL(MAM1,0) AS MAM1,ISNULL(MAM2,0) AS MAM2,ISNULL(MAM3,0) AS MAM3,ISNULL(MAM4,0) AS MAM4,
+--ISNULL(NCAM1,0) AS NCAM1,ISNULL(NCAM2,0) AS NCAM2,ISNULL(NCAM3,0) AS NCAM3,ISNULL(NCAM4,0) AS NCAM4
 from CTE cte
-full outer  join  CASH cash on cte.ClntId = cash.Cid4 OR cte.ClntId = cash.Cid1 OR cte.ClntId = cash.Cid2 OR cte.ClntId = cash.Cid3
-full outer join FNO fno on cte.ClntId = fno.fid4 OR cte.ClntId= fno.fid1 OR cte.ClntId= fno.fid2 OR cte.ClntId = fno.fid3
-full outer  join MCX mcx on fno.fid4 = mcx.mid4 OR cte.ClntId = mcx.mid1 OR cte.ClntId  = mcx.mid2 OR cte.ClntId  = mcx.mid3
+--full outer  join  CASH cash on cte.ClntId = cash.Cid4 OR cte.ClntId = cash.Cid1 OR cte.ClntId = cash.Cid2 OR cte.ClntId = cash.Cid3
+--full outer join FNO fno on cte.ClntId = fno.fid4 OR cte.ClntId= fno.fid1 OR cte.ClntId= fno.fid2 OR cte.ClntId = fno.fid3
+--full outer  join MCX mcx on fno.fid4 = mcx.mid4 OR cte.ClntId = mcx.mid1 OR cte.ClntId  = mcx.mid2 OR cte.ClntId  = mcx.mid3
+--full outer join CUR cur on  cte.ClntId= cur.FinalCUr
+--full outer join NCDX ncdx on cte.ClntId = ncdx.FINALNCDX
+
+full outer join   (select distinct  Cid4 from CASH) c  on cte.ClntId  = c.Cid4
+full outer join FNO fno on cte.ClntId in (fno.fid4,fno.fid1,fno.fid2,fno.fid3)
+full outer join MCX mcx on cte.ClntId in (mcx.mid1,mcx.mid2,mcx.mid3,mcx.mid4)
 full outer join CUR cur on  cte.ClntId= cur.FinalCUr
 full outer join NCDX ncdx on cte.ClntId = ncdx.FINALNCDX
-where cte.ClntId is not null 
+--where cte.ClntId is not null 
 
 
-Group by cte.ClntId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
-,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4
+--Group by cte.ClntId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+--,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4
 
 
 )
-,
+select * from CTE1
+--,
 
-CTE2 as (
 
-Select   ClientId
-,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
-,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
-ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
-ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
-ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
-ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4'
+--CTE2 as (
 
- from CTE c1 inner join CTE1 c2 on c1.ClntId = c2.ClientId 
+--Select   ClientId
+--,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+--,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
+--ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
+--ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
+--ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
+--ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4'
 
-)
+-- from CTE c1 inner join CTE1 c2 on c1.ClntId = c2.ClientId 
 
-Select ClientId
-,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
-,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
-ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
-ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
-ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
-ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4',
+--)
 
-Case when TotalPeak1 > TotalPeak2 then TotalPeak1
-when TotalPeak2 > TotalPeak3 then TotalPeak2
-when TotalPeak3 > TotalPeak4 then TotalPeak3
-Else TotalPeak4
-End as 'MAX'
+--Select 
 
- from CTE2 
- where ClientId is not null 
- --and ClientId = '142F001'
-group by ClientId
-,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
-,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,TotalPeak1,TotalPeak2,TotalPeak3,TotalPeak4
-order by ClientId 
+----ROW_NUMBER() over (partition by ClientId order by ClientId) as rownnum,
+-- ClientId
+--,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+--,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
+--TotalPeak1,TotalPeak2,TotalPeak3,TotalPeak4,
+--Case when TotalPeak1 > TotalPeak2 then TotalPeak1
+--when TotalPeak2 > TotalPeak3 then TotalPeak2
+--when TotalPeak3 > TotalPeak4 then TotalPeak3
+--Else TotalPeak4
+--End as 'MAX'
+----into #final1
+-- from CTE2 
+-- where ClientId is not null and ClientId = '91388542'
 
+----,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+----,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,TotalPeak1,TotalPeak2,TotalPeak3,TotalPeak4
+--order by ClientId 
+
+----select ClientId, sum(convert(Float,(CAM1))) as cam1  from #final1
+----where
+----ClientId = '91388542'
+----group by ClientId

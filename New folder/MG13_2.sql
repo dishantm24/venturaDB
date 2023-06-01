@@ -222,7 +222,7 @@ End as 'MAX'
 
  from CTE2
 
-
+ where ClientId = '01MG2428'
 
 
 
