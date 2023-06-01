@@ -95,10 +95,10 @@ CTE2 as (
 Select Distinct  ClientId
 ,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
 ,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
-ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
-ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
-ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
-ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4'
+(convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1)) as 'TotalPeak1',
+(convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2)) as 'TotalPeak2',
+(convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3)) as 'TotalPeak3',
+(convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4)) as 'TotalPeak4'
 
  from CTE c1 inner join CTE1 c2 on c1.ClntId = c2.ClientId 
 
@@ -107,19 +107,18 @@ ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + conv
 Select ClientId
 ,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
 ,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
-ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
-ceiling((convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2))) as 'TotalPeak2',
-ceiling((convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3))) as 'TotalPeak3',
-ceiling((convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4))) as 'TotalPeak4',
+(convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1)) as 'TotalPeak1',
+(convert(Float,CAM2) + convert(Float,FAM2) + convert(Float,CRAM2) + convert(Float,MAM2) + convert(Float,NCAM2)) as 'TotalPeak2',
+(convert(Float,CAM3) + convert(Float,FAM3) + convert(Float,CRAM3) + convert(Float,MAM3) + convert(Float,NCAM3)) as 'TotalPeak3',
+(convert(Float,CAM4) + convert(Float,FAM4) + convert(Float,CRAM4) + convert(Float,MAM4) + convert(Float,NCAM4)) as 'TotalPeak4',
 
-Case when TotalPeak1 > TotalPeak2 then TotalPeak1
+Case when TotalPeak1 > TotalPeak2   then TotalPeak1
 when TotalPeak2 > TotalPeak3 then TotalPeak2
 when TotalPeak3 > TotalPeak4 then TotalPeak3
-Else TotalPeak4
+when TotalPeak4 > TotalPeak1 OR TotalPeak4 > TotalPeak2 OR TotalPeak4 > TotalPeak3 then TotalPeak4
+else NULL
+
 End as 'MAX'
 
  from CTE2
-
-
-
-
+where ClientId ='140G9066'
