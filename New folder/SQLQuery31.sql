@@ -1,25 +1,98 @@
 --Select * from CASH1 ca left join CUR1 cu on ca.ClntId = cu.ClntId
 
 --Delete the unwanted Records 
+--delete from CASH1 where ValtnDt = 'ValtnDt'
+--delete from CASH2 where ValtnDt = 'ValtnDt'
+--delete from CASH3 where ValtnDt = 'ValtnDt'
+--delete from CASH4 where ValtnDt = 'ValtnDt'
+
+--delete from CUR1 where TradDt = 'TradDt'
+--delete from CUR2 where TradDt = 'TradDt'
+--delete from CUR3 where TradDt = 'TradDt'
+--delete from CUR4 where TradDt = 'TradDt'
+
+--delete from FNO1 where TradDt = 'TradDt'
+--delete from FNO2 where TradDt = 'TradDt'
+--delete from FNO3 where TradDt = 'TradDt'
+--delete from FNO4 where TradDt = 'TradDt'
+
+--Delete from NCDX1 where Date ='Date'
+--Delete from NCDX2 where Date ='Date'
+--Delete from NCDX3 where Date ='Date'
+--Delete from NCDX4 where Date ='Date'
+
+--delete from COM1 where ValtnDt = 'ValtnDt'
+--delete from COM2 where ValtnDt = 'ValtnDt'
+--delete from COM3 where ValtnDt = 'ValtnDt'
+--delete from COM4 where ValtnDt = 'ValtnDt'
 --select * from CASH1 
-exec DeleteMG13Peak_Sp
+
+
+
+
 
 --Main Code
 DROP TABLE	IF EXISTS #cur;
 
 DROP TABLE	IF EXISTS #ncdx;
-DECLARE @max1 as INT ,@max2 as INT,@max3 as INT ,@max4 as INT;
+DECLARE @max1 as INT ,@max2 as INT,@max3 as INT ,@max4 as INT
+,@max5 as INT ,@max6 as INT,@max7 as INT ,@max8 as INT,
+@max9 as INT ,@max10 as INT,@max11 as INT ,@max12 as INT,
+@max13 as INT ,@max14 as INT,@max15 as INT ,@max16 as INT,
+@max17 as INT ,@max18 as INT,@max19 as INT ,@max20 as INT;
+
 SET @max1  = (Select count(*) from CUR1)--268
 SET @max2  = (Select count(*)  from CUR2)--271
 SET @max3  = (Select count(*) from CUR3)--271
 SET @max4  = (Select count(*)  from CUR4)--269
-
-DECLARE @max5 as INT ,@max6 as INT,@max7 as INT ,@max8 as INT;
 SET @max5  =(Select count(*) from NCDX1)
 SET @max6  =(Select count(*) from NCDX2)
 SET @max7  =(Select count(*) from NCDX3)
 SET @max8  =(Select count(*) from NCDX4)
+SET @max9  =(Select count(*) from CASH1)
+SET @max10 =(Select count(*)from CASH2)
+SET @max11 =(Select count(*)from CASH3)
+SET @max12 =(Select count(*) from CASH4)
+SET @max13 =(Select count(*)from FNO1)
+SET @max14 =(Select count(*)from FNO2)
+SET @max15 =(Select count(*)from FNO3)
+SET @max16 =(Select count(*)from FNO4)
+SET @max17 =(Select count(*)from MCX1)
+SET @max18 =(Select count(*)from MCX2)
+SET @max19 =(Select count(*)from MCX3)
+SET @max20 =(Select count(*)from MCX4);
 
+select ca1.ClntId as Cid1 ,ca2.ClntId as Cid2 , ca3.ClntId as Cid3,ca4.ClntId as Cid4 
+,ca1.TtlMrgnAmt as CAM1 ,ca2.TtlMrgnAmt as CAM2 ,ca3.TtlMrgnAmt as CAM3,ca4.TtlMrgnAmt as CAM4
+into #cash
+from CASH4 ca4
+full outer   join CASH3 ca3 on ca4.ClntId = ca3.ClntId
+full outer join CASH2 ca2 on ca4.ClntId = ca2.ClntId
+full outer join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
+
+
+Select fn1.ClntId as fid1,fn2.ClntId as fid2,fn3.ClntId as fid3,fn4.ClntId as fid4
+,fn1.IntraDayMrgnCall as FAM1,fn2.IntraDayMrgnCall as FAM2,fn3.IntraDayMrgnCall as FAM3,fn4.IntraDayMrgnCall as FAM4
+into #fno
+from FNO4 fn4
+full outer join FNO3 fn3 on fn4.ClntId =fn3.ClntId
+full outer join FNO2 fn2 on fn4.ClntId = fn2.ClntId
+full outer join FNO1 fn1 on fn4.ClntId = fn1.ClntId
+
+
+Select mc1.column5 as mid1
+,mc2.column5 as mid2
+,mc3.column5 as mid3
+,mc4.column5 as mid4
+, mc1.column9 as MAM1 
+,mc2.column9 as MAM2
+,mc3.column9 as MAM3
+,mc4.column9 as MAM4
+into #mcx
+from MCX4 mc4
+full outer join MCX3 mc3 on mc4.column5 = mc3.column5
+full outer  join MCX2 mc2 on mc4.column5 = mc2.column5
+full outer join MCX1 mc1 on mc4.column5 = mc1.column5
 
 select 
 cu1.ClntId as cuid1,cu2.ClntId as cuid2,cu3.ClntId as cuid3,cu4.ClntId as cuid4
@@ -46,40 +119,62 @@ full outer join NCDX2 nc2 on nc4.Client_Code = nc2.Client_Code;
 with 
 
 CASH as (
-select ca1.ClntId as Cid1 ,ca2.ClntId as Cid2 , ca3.ClntId as Cid3,ca4.ClntId as Cid4 
-,ca1.TtlMrgnAmt as CAM1 ,ca2.TtlMrgnAmt as CAM2 ,ca3.TtlMrgnAmt as CAM3,ca4.TtlMrgnAmt as CAM4
-from CASH4 ca4
-full outer   join CASH3 ca3 on ca4.ClntId = ca3.ClntId
-full outer join CASH2 ca2 on ca4.ClntId = ca2.ClntId
-full outer join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
+--select ca1.ClntId as Cid1 ,ca2.ClntId as Cid2 , ca3.ClntId as Cid3,ca4.ClntId as Cid4 
+--,ca1.TtlMrgnAmt as CAM1 ,ca2.TtlMrgnAmt as CAM2 ,ca3.TtlMrgnAmt as CAM3,ca4.TtlMrgnAmt as CAM4
+--from CASH4 ca4
+--full outer   join CASH3 ca3 on ca4.ClntId = ca3.ClntId
+--full outer join CASH2 ca2 on ca4.ClntId = ca2.ClntId
+--full outer join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
+
+Select CAM1,CAM2,CAM3,CAM4,
+Case when @max9> @max10 then Cid1
+When @max10 > @max11 then Cid2
+when @max11 > @max12 then Cid3
+else Cid4
+end as 'FinalCash'
+ from #cash
 ),
 
 FNO as (
 
-Select fn1.ClntId as fid1,fn2.ClntId as fid2,fn3.ClntId as fid3,fn4.ClntId as fid4
-,fn1.IntraDayMrgnCall as FAM1,fn2.IntraDayMrgnCall as FAM2,fn3.IntraDayMrgnCall as FAM3,fn4.IntraDayMrgnCall as FAM4
-from FNO4 fn4
-full outer join FNO3 fn3 on fn4.ClntId =fn3.ClntId
-full outer join FNO2 fn2 on fn4.ClntId = fn2.ClntId
-full outer join FNO1 fn1 on fn4.ClntId = fn1.ClntId
+--Select fn1.ClntId as fid1,fn2.ClntId as fid2,fn3.ClntId as fid3,fn4.ClntId as fid4
+--,fn1.IntraDayMrgnCall as FAM1,fn2.IntraDayMrgnCall as FAM2,fn3.IntraDayMrgnCall as FAM3,fn4.IntraDayMrgnCall as FAM4
+--from FNO4 fn4
+--full outer join FNO3 fn3 on fn4.ClntId =fn3.ClntId
+--full outer join FNO2 fn2 on fn4.ClntId = fn2.ClntId
+--full outer join FNO1 fn1 on fn4.ClntId = fn1.ClntId
+
+Select FAM1,FAM2,FAM3,FAM4,
+case when @max13 > @max14 then fid1
+when @max14> @max15 then fid2
+when @max15 > @max16 then fid3
+else fid4
+end as 'FinalFNO'
+from #fno
 
 ),
 
 MCX as (
 
-Select mc1.column5 as mid1
-,mc2.column5 as mid2
-,mc3.column5 as mid3
-,mc4.column5 as mid4
-, mc1.column9 as MAM1 
-,mc2.column9 as MAM2
-,mc3.column9 as MAM3
-,mc4.column9 as MAM4
-from MCX4 mc4
-full outer join MCX3 mc3 on mc4.column5 = mc3.column5
-full outer  join MCX2 mc2 on mc4.column5 = mc2.column5
-full outer join MCX1 mc1 on mc4.column5 = mc1.column5
-
+--Select mc1.column5 as mid1
+--,mc2.column5 as mid2
+--,mc3.column5 as mid3
+--,mc4.column5 as mid4
+--, mc1.column9 as MAM1 
+--,mc2.column9 as MAM2
+--,mc3.column9 as MAM3
+--,mc4.column9 as MAM4
+--from MCX4 mc4
+--full outer join MCX3 mc3 on mc4.column5 = mc3.column5
+--full outer  join MCX2 mc2 on mc4.column5 = mc2.column5
+--full outer join MCX1 mc1 on mc4.column5 = mc1.column5
+Select MAM1,MAM2,MAM3,MAM4
+,case when @max17 > @max18 then mid1
+when @max18 > @max19 then mid2
+when @max19 > @max20 then mid3
+else mid4
+end as 'FinalMCX'
+from #mcx
 ),
 
 CUR as (
@@ -170,23 +265,21 @@ Select Client_Code from NCDX4
 ,
 CTE1 AS (
 
-select  cte.ClntId as ClientId
+select Distinct  cte.ClntId as ClientId
 ,ISNULL(CAM1,0) AS CAM1,ISNULL(CAM2,0) AS CAM2,ISNULL(CAM3,0) AS CAM3,ISNULL(CAM4,0) AS CAM4,
 ISNULL(FAM1,0) AS FAM1,ISNULL(FAM2,0) AS FAM2,ISNULL(FAM3,0) AS FAM3,ISNULL(FAM4,0) AS FAM4,
 ISNULL(CRAM1,0) AS CRAM1,ISNULL(CRAM2,0) AS CRAM2,ISNULL(CRAM3,0) AS CRAM3,ISNULL(CRAM4,0) AS CRAM4,
 ISNULL(MAM1,0) AS MAM1,ISNULL(MAM2,0) AS MAM2,ISNULL(MAM3,0) AS MAM3,ISNULL(MAM4,0) AS MAM4,
 ISNULL(NCAM1,0) AS NCAM1,ISNULL(NCAM2,0) AS NCAM2,ISNULL(NCAM3,0) AS NCAM3,ISNULL(NCAM4,0) AS NCAM4
 from CTE cte
-full outer  join  CASH cash on cte.ClntId = cash.Cid4
-full outer join FNO fno on cte.ClntId = fno.fid4
-full outer  join MCX mcx on cte.ClntId = mcx.mid4
+full outer  join  CASH cash on cte.ClntId = cash.FinalCash
+full outer join FNO fno on cte.ClntId = fno.FinalFNO
+full outer  join MCX mcx on cte.ClntId  =mcx.FinalMCX
 full outer join CUR cur on cte.ClntId = cur.FinalCUr
 full outer join NCDX ncdx on cte.ClntId = ncdx.FINALNCDX
 where cte.ClntId is not null 
-
-
-Group by cte.ClntId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
-,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4
+--Group by cte.ClntId,cash.Cid1,cash.Cid2,cash.Cid3,cash.Cid4,mcx.mid1,mcx.mid2,mcx.mid3,mcx.mid4,fno.fid1,fno.fid2,fno.fid3,fno.fid4,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+--,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4
 
 
 )
@@ -221,8 +314,6 @@ Else TotalPeak4
 End as 'MAX'
 
  from CTE2
-
-
-
+ where ClientId ='8218674'
 
 

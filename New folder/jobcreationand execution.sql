@@ -79,9 +79,18 @@ select * from CASH1
 select * from CASH2
 
 
-BULK insert venturaDb..CASH2 from 'D:\MG13Peakdocsandscripts\MG13_Peak\250523\CASH2.rpt'
-with(FIELDTERMINATOR =',',ROWTERMINATOR ='\n')
+BULK insert venturaDb..CASH1 from 'D:\MG13Peakdocsandscripts\MG13_Peak\250523\CASH1.rpt'
+with(
+FIELDTERMINATOR =',',ROWTERMINATOR ='\n')
 
-truncate table CASH2
+truncate table CASH1
+
+select * from Cash1  where ClntId='0'
+
+exec xp_cmdshell
+
+
+'bcp venturaDb..FNO1 format nul -c -f "D:\FNO.fmt" -T'
 
 select * from CASH1
+

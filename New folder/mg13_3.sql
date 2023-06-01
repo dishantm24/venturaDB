@@ -1,13 +1,36 @@
 --Select * from CASH1 ca left join CUR1 cu on ca.ClntId = cu.ClntId
 
 --Delete the unwanted Records 
+--delete from CASH1 where ValtnDt = 'ValtnDt'
+--delete from CASH2 where ValtnDt = 'ValtnDt'
+--delete from CASH3 where ValtnDt = 'ValtnDt'
+--delete from CASH4 where ValtnDt = 'ValtnDt'
+
+--delete from CUR1 where TradDt = 'TradDt'
+--delete from CUR2 where TradDt = 'TradDt'
+--delete from CUR3 where TradDt = 'TradDt'
+--delete from CUR4 where TradDt = 'TradDt'
+
+--delete from FNO1 where TradDt = 'TradDt'
+--delete from FNO2 where TradDt = 'TradDt'
+--delete from FNO3 where TradDt = 'TradDt'
+--delete from FNO4 where TradDt = 'TradDt'
+
+--Delete from NCDX1 where Date ='Date'
+--Delete from NCDX2 where Date ='Date'
+--Delete from NCDX3 where Date ='Date'
+--Delete from NCDX4 where Date ='Date'
+
+--delete from COM1 where ValtnDt = 'ValtnDt'
+--delete from COM2 where ValtnDt = 'ValtnDt'
+--delete from COM3 where ValtnDt = 'ValtnDt'
+--delete from COM4 where ValtnDt = 'ValtnDt'
 --select * from CASH1 
-exec DeleteMG13Peak_Sp
 
 --Main Code
 DROP TABLE	IF EXISTS #cur;
-
 DROP TABLE	IF EXISTS #ncdx;
+
 DECLARE @max1 as INT ,@max2 as INT,@max3 as INT ,@max4 as INT;
 SET @max1  = (Select count(*) from CUR1)--268
 SET @max2  = (Select count(*)  from CUR2)--271
@@ -21,6 +44,7 @@ SET @max7  =(Select count(*) from NCDX3)
 SET @max8  =(Select count(*) from NCDX4)
 
 
+
 select 
 cu1.ClntId as cuid1,cu2.ClntId as cuid2,cu3.ClntId as cuid3,cu4.ClntId as cuid4
 , cu1.IntraDayMrgnCall as CRAM1,cu2.IntraDayMrgnCall as CRAM2, cu3.IntraDayMrgnCall
@@ -29,7 +53,8 @@ into #cur
 from CUR4 cu4
 full outer join CUR1 cu1 on cu4.ClntId = cu1.ClntId
 full outer join CUR2 cu2 on cu4.ClntId = cu2.ClntId
-full outer join CUR3 cu3 on cu4.ClntId = cu3.ClntId;
+full outer join CUR3 cu3 on cu4.ClntId = cu3.ClntId
+group by cu1.ClntId,cu2.ClntId,cu3.ClntId,cu4.ClntId,cu1.IntraDayMrgnCall,cu2.IntraDayMrgnCall,cu3.IntraDayMrgnCall,cu4.IntraDayMrgnCall
 
 select nc1.Client_Code as ncid1,nc2.Client_Code as ncid2 , nc3.Client_Code as ncid3,nc4.Client_Code as ncid4
 ,(convert(FLOAT,nc1.Initial_Margin) + convert (FLOAT, nc1.ELM_Margin )) as NCAM1
@@ -41,7 +66,11 @@ from
 NCDX4 nc4
 full outer join NCDX1 nc1 on nc4.Client_Code = nc1.Client_Code
 full outer join NCDX3 nc3 on nc4.Client_Code = nc3.Client_Code
-full outer join NCDX2 nc2 on nc4.Client_Code = nc2.Client_Code;
+full outer join NCDX2 nc2 on nc4.Client_Code = nc2.Client_Code
+
+group by nc1.Client_Code,nc2.Client_Code,nc3.Client_Code,nc4.Client_Code
+,nc1.Initial_Margin,nc1.ELM_Margin,nc2.Initial_Margin,nc2.ELM_Margin
+,nc3.Initial_Margin,nc3.ELM_Margin,nc4.Initial_Margin,nc4.ELM_Margin;
 
 with 
 
@@ -52,6 +81,8 @@ from CASH4 ca4
 full outer   join CASH3 ca3 on ca4.ClntId = ca3.ClntId
 full outer join CASH2 ca2 on ca4.ClntId = ca2.ClntId
 full outer join CASH1 ca1 ON ca4.ClntId = ca1.ClntId
+group by ca1.ClntId ,ca2.ClntId  , ca3.ClntId ,ca4.ClntId 
+,ca1.TtlMrgnAmt  ,ca2.TtlMrgnAmt  ,ca3.TtlMrgnAmt ,ca4.TtlMrgnAmt 
 ),
 
 FNO as (
@@ -62,23 +93,23 @@ from FNO4 fn4
 full outer join FNO3 fn3 on fn4.ClntId =fn3.ClntId
 full outer join FNO2 fn2 on fn4.ClntId = fn2.ClntId
 full outer join FNO1 fn1 on fn4.ClntId = fn1.ClntId
+group by  fn1.ClntId ,fn2.ClntId ,fn3.ClntId ,fn4.ClntId 
+,fn1.IntraDayMrgnCall ,fn2.IntraDayMrgnCall 
+,fn3.IntraDayMrgnCall ,fn4.IntraDayMrgnCall 
 
 ),
 
 MCX as (
 
-Select mc1.column5 as mid1
-,mc2.column5 as mid2
-,mc3.column5 as mid3
-,mc4.column5 as mid4
-, mc1.column9 as MAM1 
-,mc2.column9 as MAM2
-,mc3.column9 as MAM3
-,mc4.column9 as MAM4
-from MCX4 mc4
+Select mc1.column5 as mid1 ,mc2.column5 as mid2,mc3.column5 as mid3,mc4.column5 as mid4
+, mc1.column9 as MAM1 ,mc2.column9 as MAM2,mc3.column9 as MAM3
+,mc4.column9 as MAM4 from MCX4 mc4
 full outer join MCX3 mc3 on mc4.column5 = mc3.column5
 full outer  join MCX2 mc2 on mc4.column5 = mc2.column5
 full outer join MCX1 mc1 on mc4.column5 = mc1.column5
+group by mc1.column5  ,mc2.column5,mc3.column5 ,mc4.column5
+, mc1.column9  ,mc2.column9 ,mc3.column9 
+,mc4.column9 
 
 ),
 
@@ -177,10 +208,10 @@ ISNULL(CRAM1,0) AS CRAM1,ISNULL(CRAM2,0) AS CRAM2,ISNULL(CRAM3,0) AS CRAM3,ISNUL
 ISNULL(MAM1,0) AS MAM1,ISNULL(MAM2,0) AS MAM2,ISNULL(MAM3,0) AS MAM3,ISNULL(MAM4,0) AS MAM4,
 ISNULL(NCAM1,0) AS NCAM1,ISNULL(NCAM2,0) AS NCAM2,ISNULL(NCAM3,0) AS NCAM3,ISNULL(NCAM4,0) AS NCAM4
 from CTE cte
-full outer  join  CASH cash on cte.ClntId = cash.Cid4
-full outer join FNO fno on cte.ClntId = fno.fid4
-full outer  join MCX mcx on cte.ClntId = mcx.mid4
-full outer join CUR cur on cte.ClntId = cur.FinalCUr
+full outer  join  CASH cash on cte.ClntId = cash.Cid4 OR cte.ClntId = cash.Cid1 OR cte.ClntId = cash.Cid2 OR cte.ClntId = cash.Cid3
+full outer join FNO fno on cte.ClntId = fno.fid4 OR cte.ClntId= fno.fid1 OR cte.ClntId= fno.fid2 OR cte.ClntId = fno.fid3
+full outer  join MCX mcx on fno.fid4 = mcx.mid4 OR cte.ClntId = mcx.mid1 OR cte.ClntId  = mcx.mid2 OR cte.ClntId  = mcx.mid3
+full outer join CUR cur on  cte.ClntId= cur.FinalCUr
 full outer join NCDX ncdx on cte.ClntId = ncdx.FINALNCDX
 where cte.ClntId is not null 
 
@@ -194,7 +225,7 @@ Group by cte.ClntId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CR
 
 CTE2 as (
 
-Select Distinct  ClientId
+Select   ClientId
 ,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
 ,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,
 ceiling((convert(Float,CAM1) + convert(Float,FAM1) + convert(Float,CRAM1) + convert(Float,MAM1) + convert(Float,NCAM1))) as 'TotalPeak1',
@@ -220,9 +251,11 @@ when TotalPeak3 > TotalPeak4 then TotalPeak3
 Else TotalPeak4
 End as 'MAX'
 
- from CTE2
-
-
-
-
+ from CTE2 
+ where ClientId is not null 
+ --and ClientId = '142F001'
+group by ClientId
+,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,TotalPeak1,TotalPeak2,TotalPeak3,TotalPeak4
+order by ClientId 
 
