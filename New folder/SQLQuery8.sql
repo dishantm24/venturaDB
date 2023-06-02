@@ -116,12 +116,7 @@ Select ClientId,TotalPeak4 as TotalPeak from CTE2 ) cc
 Group by ClientId
  )
 
-select c2.ClientId,CAM1,CAM2,CAM3,CAM4
-,FAM1,FAM2,FAM3,FAM4
-,CRAM1,CRAM2,CRAM3,CRAM4
-,MAM1,MAM2,MAM3,MAM4
-,NCAM1,NCAM2,NCAM3,NCAM4,
-TotalPeak1,TotalPeak2,TotalPeak3,TotalPeak4
-,MAXTOTALPeak 
-from CTE3 c1 inner join CTE2 c2 on c1.ClientId = c2.ClientId
+ select c2.ClientId,CAM1,CAM2,CAM3,CAM4,FAM1,FAM2,FAM3,FAM4,CRAM1,CRAM2,CRAM3,CRAM4
+,MAM1,MAM2,MAM3,MAM4,NCAM1,NCAM2,NCAM3,NCAM4,TotalPeak1,TotalPeak2,TotalPeak3,TotalPeak4,MAXTOTALPeak from CTE3 c1 inner join CTE2 c2 on c1.ClientId = c2.ClientId
  
+
