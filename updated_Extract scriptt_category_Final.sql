@@ -227,18 +227,28 @@ vr.series not in ('BE','BO','BL','BZ','BT','IT','SM','SG','ST','SZ')
 order by  tf.FNOIND desc ;
 
 
+--select * from #temp1 where ISINNO= 'INE943D01017'
+
 
 with CTE as (
 
 select t.scripcode ,
-case when FNOIND = 'IND' and MAXIUMVALUE between 15 and 99 then CAT
-when FNOIND = 'FNO' and MAXIUMVALUE between 25 and 99 then CAT
-when FNOIND = NULL and MAXIUMVALUE between 33 and 99 then CAT
-when MAXIUMVALUE > 99 then CAT
+case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 then q.Category
+when FNOIND = 'FNO' and ceiling(MAXIUMVALUE)between 25 and 99 then a.Category
+when FNOIND = NULL and ceiling(MAXIUMVALUE) between 33 and 99 then b.Category
+when ceiling(MAXIUMVALUE) between 50 and 99 then c.Category
+when ceiling(MAXIUMVALUE)between 100 and 115 then d.Category 
+when ceiling(MAXIUMVALUE) = 100 then e.Category
 else CAT
 end as 'NEWCAT'
 
 from #temp1 t 
+left join catq q on t.MAXIUMVALUE = q.Margin 
+left join cata a on t.MAXIUMVALUE = a.Margin 
+left join cata b on t.MAXIUMVALUE = b.Margin 
+left join cata c on t.MAXIUMVALUE = c.Margin 
+left join cata d on t.MAXIUMVALUE = d.Margin 
+left join cata e on t.MAXIUMVALUE = e.Margin 
 ),
 
 CTE1 as (
@@ -266,13 +276,22 @@ end as 'MAXCAT'
  
  Select   t.scripcode,
  
- case when FNOIND = 'IND' and MAXCAT between 15 and 99 then CAT_1
-when FNOIND = 'FNO' and MAXCAT between 25 and 99 then CAT_1
-when FNOIND = NULL and MAXCAT between 33 and 99 then CAT_1
-when MAXCAT > 99 then CAT_1
+ case when FNOIND = 'IND' and ceiling(c2.MAXCAT) between 15 and 99 then q.Category
+when FNOIND = 'FNO' and ceiling(c2.MAXCAT)  between 25 and 99 then a.Category
+when FNOIND = NULL and ceiling(c2.MAXCAT)  between 33 and 99 then b.Category
+when ceiling(c2.MAXCAT)  between 50 and 99 then c.Category
+when ceiling(c2.MAXCAT)  between 100 and 115 then d.Category 
+when ceiling(c2.MAXCAT)  = 100 then e.Category
+
 else CAT_1
 end as 'CAT1NEW'
 from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
+left join catq q on ceiling(c2.MAXCAT) = q.Margin
+left join cata a on ceiling(c2.MAXCAT) = a.Margin
+left join cata b on ceiling(c2.MAXCAT) = b.Margin
+left join cata c on ceiling(c2.MAXCAT) = c.Margin
+left join cata d on ceiling(c2.MAXCAT) = d.Margin
+left join cata e on ceiling(c2.MAXCAT) = e.Margin
  
  )
 
@@ -294,7 +313,7 @@ rownn   = 1
 --and scripcode in ( '2987','13517')
 
 --and FNOIND is NULL 
---and ISINNO = 'IN0020190388'
+and ISINNO = 'INE951D01028'
 group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
 ,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
 [SPANMgn%],[ExpMgn%],[AddExpMgn%],FNOMAR,MAXIUMVALUE,
@@ -365,4 +384,4 @@ select F3 from isinsc
 --select top 100 *  from tokeninfo
 
  
-
+select * from catq
