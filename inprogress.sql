@@ -59,7 +59,9 @@ varvalues as (
 select   FNOIND, m1.[ scripcode], case 
 when tf.FNOIND  ='IND' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
 when tf.FNOIND  ='FNO' then ceiling((vr.VAR + vr.ELM*3 + vr.ADDI) + 5  )
-else ceiling ( (vr.VAR + vr.ELM*5 + vr.ADDI) + 5 )
+--when tf.FNOIND is null then ceiling ( (vr.VAR + vr.ELM*5 + vr.ADDI) + 5 )
+
+else ceiling (( vr.VAR + vr.ELM*5 + vr.ADDI)+5)
 end as 'var+el+adii' from marginreport m1 
 left   join tokeninfo tf on m1.[ scripcode] = tf.TOKEN 
 inner  join [dbo].[NSEM] ns on m1.[ scripcode] = ns.Token
@@ -208,7 +210,7 @@ inner join maxcatnew mxc on v.[ scripcode] = mxc.[ scripcode]
 inner join  marginreport m on v.[ scripcode]  = m.[ scripcode]
 left     join tokeninfo tf on m.[ scripcode] = tf.TOKEN 
 inner  join [dbo].[NSEM] ns on m.[ scripcode] = ns.Token
-inner join  [catM] ca on m.[ Category] = ca.Category
+left  join  [catM] ca on m.[ Category] = ca.Category
 inner join securitydata sd on m.[ scripcode] = sd.NEATCM
 left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL')
 left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
@@ -227,28 +229,18 @@ vr.series not in ('BE','BO','BL','BZ','BT','IT','SM','SG','ST','SZ')
 order by  tf.FNOIND desc ;
 
 
---select * from #temp1 where ISINNO= 'INE943D01017'
-
 
 with CTE as (
 
 select t.scripcode ,
-case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 then q.Category
-when FNOIND = 'FNO' and ceiling(MAXIUMVALUE)between 25 and 99 then a.Category
-when FNOIND = NULL and ceiling(MAXIUMVALUE) between 33 and 99 then b.Category
-when ceiling(MAXIUMVALUE) between 50 and 99 then c.Category
-when ceiling(MAXIUMVALUE)between 100 and 115 then d.Category 
-when ceiling(MAXIUMVALUE) = 100 then e.Category
+case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 then CAT
+when FNOIND = 'FNO' and ceiling(MAXIUMVALUE) between 25 and 99 then CAT
+when FNOIND = NULL and ceiling(MAXIUMVALUE) between 33 and 99 then CAT
+when ceiling(MAXIUMVALUE) > 99 then CAT
 else CAT
 end as 'NEWCAT'
 
 from #temp1 t 
-left join catq q on t.MAXIUMVALUE = q.Margin 
-left join cata a on t.MAXIUMVALUE = a.Margin 
-left join cata b on t.MAXIUMVALUE = b.Margin 
-left join cata c on t.MAXIUMVALUE = c.Margin 
-left join cata d on t.MAXIUMVALUE = d.Margin 
-left join cata e on t.MAXIUMVALUE = e.Margin 
 ),
 
 CTE1 as (
@@ -276,22 +268,13 @@ end as 'MAXCAT'
  
  Select   t.scripcode,
  
- case when FNOIND = 'IND' and ceiling(c2.MAXCAT) between 15 and 99 then q.Category
-when FNOIND = 'FNO' and ceiling(c2.MAXCAT)  between 25 and 99 then a.Category
-when FNOIND = NULL and ceiling(c2.MAXCAT)  between 33 and 99 then b.Category
-when ceiling(c2.MAXCAT)  between 50 and 99 then c.Category
-when ceiling(c2.MAXCAT)  between 100 and 115 then d.Category 
-when ceiling(c2.MAXCAT)  = 100 then e.Category
-
+ case when FNOIND = 'IND' and ceiling(MAXCAT) between 15 and 99 then CAT_1
+when FNOIND = 'FNO' and ceiling(MAXCAT) between 25 and 99 then CAT_1
+when FNOIND = NULL and ceiling(MAXCAT) between 33 and 99 then CAT_1
+when ceiling(MAXCAT) > 99 then CAT_1
 else CAT_1
 end as 'CAT1NEW'
 from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
-left join catq q on ceiling(c2.MAXCAT) = q.Margin
-left join cata a on ceiling(c2.MAXCAT) = a.Margin
-left join cata b on ceiling(c2.MAXCAT) = b.Margin
-left join cata c on ceiling(c2.MAXCAT) = c.Margin
-left join cata d on ceiling(c2.MAXCAT) = d.Margin
-left join cata e on ceiling(c2.MAXCAT) = e.Margin
  
  )
 
@@ -313,7 +296,7 @@ rownn   = 1
 --and scripcode in ( '2987','13517')
 
 --and FNOIND is NULL 
-and ISINNO = 'INE951D01028'
+and ISINNO = 'INE614G01033'
 group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
 ,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
 [SPANMgn%],[ExpMgn%],[AddExpMgn%],FNOMAR,MAXIUMVALUE,
@@ -384,4 +367,4 @@ select F3 from isinsc
 --select top 100 *  from tokeninfo
 
  
-select * from catq
+

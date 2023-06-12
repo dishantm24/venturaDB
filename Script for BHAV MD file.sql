@@ -186,15 +186,13 @@ b5.[CLOSE] as 'TRate',
 round ((abs((b5.[CLOSE]-b4.[CLOSE])/b5.[CLOSE]))* 100 ,3 ) as '1Day', --ABS((P1-O1)/P1)*100
 round ((abs((b5.[CLOSE]-b3.[CLOSE])/b5.[CLOSE]))* 100 , 3 ) as '2Day', --ABS((P1-N1)/P1)*100
 case 
-when  b1.TOTTRDQTY <> 0 OR  b1.TOTTRDQTY = 0    then   (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+when  b1.TOTTRDQTY <> 0 OR  b1.TOTTRDQTY = 0  then   (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
 when  b2.TOTTRDQTY <> 0 OR  b2.TOTTRDQTY = 0  then (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-when  b3.TOTTRDQTY <> 0 OR  b3.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+when  b3.TOTTRDQTY <> 0 OR  b3.TOTTRDQTY = 0  then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
 when  b4.TOTTRDQTY <> 0 OR  b4.TOTTRDQTY = 0  then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-when  b5.TOTTRDQTY <> 0 OR  b5.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+when  b5.TOTTRDQTY <> 0 OR  b5.TOTTRDQTY = 0  then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
 else  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)
-
 end as 'AVERAGES '
---(b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5 as 'AVERAGES'
 ,vr.VAR as 'VAR',
 vr.ELM as 'ELM',
 vr.ADDI as 'ADDI',
@@ -239,7 +237,8 @@ left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL
 left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
-left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+--left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+left  join   [dbo].[bhav6] b5 on ns.Symbol = b5.SYMBOL and b5.SERIES not in ('BO','BL')
 inner join VARreport vr on m.ISINNO = vr.ISINNO
 left join span sp on m.[ Scrip_Name] = sp.Symbol and ns.Series = 'EQ'
 left  join   BSEM bs on m.ISINNO = bs.ISIN 
@@ -300,7 +299,7 @@ from #temp1 t1 inner join CTE1 c1 on t1.scripcode = c1.scripcode
 
 CTE3 as (
 
-Select    t.scripcode,
+Select   Distinct t.scripcode,
 case when FNOIND = 'IND' and ceiling(MAXCAT) between 15 and 99 then CAT_1
 when FNOIND = 'FNO' and ceiling(MAXCAT) between 25 and 99 then CAT_1
 when FNOIND = NULL and ceiling(MAXCAT) between 33 and 99 then CAT_1
@@ -324,15 +323,9 @@ left join cate b on c2.MAXCAT = b.Margin
 left join cate q on c2.MAXCAT = q.Margin 
 )
 
-select  
-isnull(FNOIND,' ')as FNOIND
-
-,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
-,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],
-
-[AVERAGES ]
-
-,[VAR],ELM,ADDI,[var+el+adii],
+select   distinct 
+FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
+,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
 ISNULL ([SPANMgn],0) as [SPANMgn%]
 ,ISNULL ([ExpMgn],0) as [ExpMgn%]
 ,ISNULL ([AddExpMgn],0) as [AddExpMgn%]
@@ -351,11 +344,11 @@ end as 'MAXCAT'
 ,[ASM FLAG]
 --into #final
 from 
-#temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
+#temp1 t 
+inner join CTE2 c2 on t.scripcode = c2.scripcode
 inner join CTE c on t.scripcode = c.scripcode
 inner join CTE3 c3 on t.scripcode = c3.scripcode
-where rownn   = 1 
---and ISINNO = 'IN0020220102'
+where rownn   = 1  --and ISINNO = 'IN0020160043'
 --and [SPANMgn%] <> 0 
 group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
 ,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
@@ -369,7 +362,6 @@ c3.CAT1NEW,
 [ASM FLAG]
 
 order by FNOIND desc
-
 
 
 

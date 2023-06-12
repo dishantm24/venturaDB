@@ -165,37 +165,43 @@ Rtrim([ Scrip_Name])+ ns.Series as 'Symbol Series',
 ns.Series,
 Rtrim(m.[ Category]) as 'CAT',
 (Case when (m.[ Category] in ('C','D','E') or m.[ Category] like 'C_%_%' ) then 999 else ca.Margin end) as 'BASE',
-case when ns.Series in ('GS','GB') and b1.TOTTRDQTY is null then   0
+case when ns.Series in ('GS','GB') and  b1.TOTTRDQTY is null then   0
 else b1.TOTTRDQTY
 end as 'T-4V',
-case when ns.Series in ('GS','GB') and b2.TOTTRDQTY is null then   0
+case when ns.Series in ('GS','GB') and  b2.TOTTRDQTY is null then   0
 else b2.TOTTRDQTY
 end as 'T-3V',
-case when ns.Series in ('GS','GB') and b3.TOTTRDQTY is null then   0
+case when ns.Series in ('GS','GB') and  b3.TOTTRDQTY is null then   0
 else b3.TOTTRDQTY
 end as 'T-2V',
-case when ns.Series in ('GS','GB') and b4.TOTTRDQTY is null then   0
+case when ns.Series in ('GS','GB') and  b4.TOTTRDQTY is null then   0
 else b4.TOTTRDQTY
 end as 'T-1V',
-case when ns.Series in ('GS','GB') and b5.TOTTRDQTY is null then   0
+case when ns.Series in ('GS','GB') and  b5.TOTTRDQTY is null then   0
 else b5.TOTTRDQTY
 end as 'T',
-b3.[CLOSE] as 'T-2Rate',
-b4.[CLOSE] as 'T-1Rate',
-b5.[CLOSE] as 'TRate',
-round ((abs((b5.[CLOSE]-b4.[CLOSE])/b5.[CLOSE]))* 100 ,3 ) as '1Day', --ABS((P1-O1)/P1)*100
-round ((abs((b5.[CLOSE]-b3.[CLOSE])/b5.[CLOSE]))* 100 , 3 ) as '2Day', --ABS((P1-N1)/P1)*100
-case 
-when  b1.TOTTRDQTY <> 0 OR  b1.TOTTRDQTY = 0    then   (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-when  b2.TOTTRDQTY <> 0 OR  b2.TOTTRDQTY = 0  then (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-when  b3.TOTTRDQTY <> 0 OR  b3.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-when  b4.TOTTRDQTY <> 0 OR  b4.TOTTRDQTY = 0  then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-when  b5.TOTTRDQTY <> 0 OR  b5.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
-else  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)
+case when b3.[CLOSE] is null then 0 
+else b3.[CLOSE]  end as 'T-2Rate',
+case when b4.[CLOSE] is null then 0 
+else b4.[CLOSE] end as 'T-1Rate',
+case when b5.[CLOSE] is null then 0 
+else b5.[CLOSE]  end as 'TRate',
+--b4.[CLOSE] as 'T-1Rate',
+--b5.[CLOSE] as 'TRate',
+--round ((abs((b5.[CLOSE]-b4.[CLOSE])/b5.[CLOSE]))* 100 ,3 ) as '1Day', --ABS((P1-O1)/P1)*100
+--round ((abs((b5.[CLOSE]-b3.[CLOSE])/b5.[CLOSE]))* 100 , 3 ) as '2Day', --ABS((P1-N1)/P1)*100
+--case 
+--when  b1.TOTTRDQTY <> 0 OR  b1.TOTTRDQTY = 0    then   (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+--when  b2.TOTTRDQTY <> 0 OR  b2.TOTTRDQTY = 0  then (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+--when  b3.TOTTRDQTY <> 0 OR  b3.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+--when  b4.TOTTRDQTY <> 0 OR  b4.TOTTRDQTY = 0  then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+--when  b5.TOTTRDQTY <> 0 OR  b5.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
+--else  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)
 
-end as 'AVERAGES '
+--end as 'AVERAGES '
+
 --(b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5 as 'AVERAGES'
-,vr.VAR as 'VAR',
+vr.VAR as 'VAR',
 vr.ELM as 'ELM',
 vr.ADDI as 'ADDI',
 v.[var+el+adii],---=ROUNDUP(U1+IF(A1="IND",3*V1,IF(A1="FNO",3*V1+0,5*V1+0))+W1,0)+5,
@@ -253,7 +259,38 @@ sp.[AddExpMgn],bs.ScripCode,bs.ScripId,v.[var+el+adii],f.FNOMAR,mx.maxvalues,im.
 order by  tf.FNOIND desc ;
 
 
-with CTE as (
+
+ with Avgs as (
+
+Select Distinct  m.scripcode,
+case 
+when  b1.TOTTRDQTY <> 0 OR  b1.TOTTRDQTY = 0 then ([T-4V] + [T-3V] + [T-2V] + [T-1V] + T)/5
+when  b2.TOTTRDQTY <> 0 OR  b2.TOTTRDQTY = 0 then ([T-4V] + [T-3V] + [T-2V] + [T-1V] + T)/5
+when  b3.TOTTRDQTY <> 0 OR  b3.TOTTRDQTY = 0 then ([T-4V] + [T-3V] + [T-2V] + [T-1V] + T)/5
+when  b4.TOTTRDQTY <> 0 OR  b4.TOTTRDQTY = 0 then ([T-4V] + [T-3V] + [T-2V] + [T-1V] + T)/5
+when  b5.TOTTRDQTY <> 0 OR  b5.TOTTRDQTY = 0 then ([T-4V] + [T-3V] + [T-2V] + [T-1V] + T)/5
+else ([T-4V] + [T-3V] + [T-2V] + [T-1V] + T)/5
+end as 'AVEGRAGES'
+from #temp1 m 
+left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL')
+left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
+left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
+left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
+left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+),
+--ISNULL(@Product1 / NULLIF(@Product2,0),0)
+dayvalues as (
+Select distinct m.scripcode,
+round ((abs(ISNULL((TRate-[T-1Rate])/NULLIF(TRate,0),0)))* 100 ,3 ) as '1Day', --ABS((P1-O1)/P1)*100
+round ((abs(ISNULL((TRate-[T-2Rate])/NULLIF(TRate,0),0)))* 100 , 3 ) as '2Day' --ABS((P1-N1)/P1)*100
+
+from #temp1 m 
+left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
+left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
+left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+),
+
+ CTE as (
 
 select t.scripcode ,
 case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 then CAT
@@ -326,12 +363,8 @@ left join cate q on c2.MAXCAT = q.Margin
 
 select  
 isnull(FNOIND,' ')as FNOIND
-
 ,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
-,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],
-
-[AVERAGES ]
-
+,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],AVEGRAGES
 ,[VAR],ELM,ADDI,[var+el+adii],
 ISNULL ([SPANMgn],0) as [SPANMgn%]
 ,ISNULL ([ExpMgn],0) as [ExpMgn%]
@@ -354,11 +387,13 @@ from
 #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
 inner join CTE c on t.scripcode = c.scripcode
 inner join CTE3 c3 on t.scripcode = c3.scripcode
+inner join Avgs a on t.scripcode =a.scripcode 
+inner join dayvalues d on t.scripcode = d.scripcode
 where rownn   = 1 
 --and ISINNO = 'IN0020220102'
 --and [SPANMgn%] <> 0 
 group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
-,[T-2Rate],[T-1Rate],[TRate],[1Day],[2Day],[AVERAGES ],[VAR],ELM,ADDI,[var+el+adii],
+,[T-2Rate],[T-1Rate],[TRate],d.[1Day],d.[2Day],AVEGRAGES,[VAR],ELM,ADDI,[var+el+adii],
 [SPANMgn]
 ,[ExpMgn],[AddExpMgn],FNOMAR,MAXIUMVALUE,
 c.NEWCAT,

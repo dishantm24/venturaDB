@@ -1,7 +1,5 @@
 
 
-if EXISTS (select * from #temp1) drop table #temp1;
-
 with
 varvalues as (
 select   FNOIND, m1.[ scripcode], case 
