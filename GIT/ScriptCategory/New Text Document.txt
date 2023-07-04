@@ -1,0 +1,11 @@
+sa
+Ventura#$123%@
+VSL1184
+NT Service\MSSQLSERVER
+
+Hi team ,
+
+Please setup my Ventura Mail address in Outlook , so it can be accessed through application in my System and also please create my Microsoft account so it can be further used for Accessinf Office tools 
+
+Thanks and Regards ,
+Dishant Mohite 
