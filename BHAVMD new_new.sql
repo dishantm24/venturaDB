@@ -52,11 +52,13 @@
 --if EXISTS (select  * from  #temp1)
 --BEGIN
 --drop table #temp1;
+
+
+
+
 DROP TABLE	IF EXISTS #temp1;
 
 DROP TABLE	IF EXISTS #final;
-
-DELETE FROM spanreport where Symbol = 'Symbol';
 
 DELETe  from NSEM where Symbol = 'Symbol';
 
@@ -67,7 +69,11 @@ deletE FROM bhav2 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav3 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav4 WHERE SYMBOL = 'SYMBOL';
 
-with
+exec mdisin;
+
+
+
+with 
 varvalues as (
 select  FNOIND, m1.[ scripcode],
 case 
@@ -81,7 +87,7 @@ then ceiling ( (vr.[VAR] + (vr.ELM*5)+ vr.ADDI) + 10 )--removed +5 and replaced 
 when tf.FNOIND is null  and( m1.[ Category] in ('C','D','E')
 OR m1.[ Category] like 'C%') 
 then ceiling ( (vr.[VAR] + (vr.ELM) + vr.ADDI) + 10 )--removed +5 and replaced with +10
-else (vr.VAR +vr.ELM+vr.ADDI)
+else (vr.[VAR] +vr.ELM+vr.ADDI)
 end as 'var+el+adii'
 from marginreport m1 
 left   join tokeninfo tf on m1.[ scripcode] = tf.TOKEN 
@@ -255,14 +261,15 @@ left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL
 left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
+left join mdisin1 b5 on m.ISINNO = b5.ISIN and b5.SERIES not in ('BO','BL')
 --left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
-left  join   [dbo].[bhav6] b5 on ns.ISIN = b5.ISINNO and b5.SERIES not in ('BO','BL')  
+--left  join   [dbo].[bhav6] b5 on ns.ISIN = b5.ISINNO and b5.SERIES not in ('BO','BL')  
 inner join VARreport vr on m.ISINNO = vr.ISINNO
 left join SPAN sp on m.[ Scrip_Name] = sp.Symbol and ns.Series = 'EQ'
 left  join   BSEM bs on m.ISINNO = bs.ISIN 
 where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ') and 
 vr.series not in ('BE','BO','BL','BZ','BT','IT','SM','SG','ST','SZ') 
-and m.ISINNO = 'INE121A01024'
+--and m.ISINNO = 'INE216A08027'
 group by tf.FNOIND,m.[ Category1],m.[ scripcode],m.ISINNO,m.[ Scrip_Name],ns.Series,b1.TOTTRDQTY,m.[ Category]
 ,b2.TOTTRDQTY,b3.TOTTRDQTY,
 b4.TOTTRDQTY,b5.TOTTRDQTY,b3.[CLOSE],b4.[CLOSE],b5.[CLOSE],vr.[VAR],vr.ELM,vr.ADDI,sp.[SPANMgn] ,
@@ -289,7 +296,7 @@ left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL
 left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
-left join [dbo].[bhav6] b5 on ns.ISIN = b5.ISINNO   and b5.SERIES not in ('BO','BL')
+left join [dbo].mdisin1 b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
 where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ')
 group by m.scripcode,[T-4V],[T-3V],[T-2V],[T-1V],T,b1.TOTTRDQTY,b2.TOTTRDQTY
 ,b3.TOTTRDQTY,b4.TOTTRDQTY,b5.TOTTRDQTY
@@ -304,7 +311,7 @@ from #temp1 m
 inner  join [dbo].[NSEM] ns on m.scripcode = ns.Token
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
-left join [dbo].[bhav6] b5 on  ns.ISIN= b5.ISINNO   and b5.SERIES not in ('BO','BL')
+left join [dbo].mdisin1 b5 on  m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
 where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ')
 group by m.scripcode,TRate,[T-1Rate],[T-2Rate]
 ),
