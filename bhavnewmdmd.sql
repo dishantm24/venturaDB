@@ -319,35 +319,44 @@ group by m.scripcode,TRate,[T-1Rate],[T-2Rate]
  CTE as (
 
 select distinct t.scripcode ,
-case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 then CAT
+case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and t.BASE <> 999 then catn.Q
  --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and m.Base = 'A' then m.Category
  --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and m.Base = 'B' then m.Category
 
 --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and b.Base = 'B%' then b.Category
 --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and (q.Base = 'Q%' or q.Base = 'Q')  then q.Category
 --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and a.Base = 'A' then a.Category
-when FNOIND = 'FNO' and ceiling(MAXIUMVALUE) between 25 and 99 then CAT
-when FNOIND Is null  and ceiling(MAXIUMVALUE) between 33 and 99 then CAT
-when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
-OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
-and ceiling(MAXIUMVALUE) between  50 and 99) then  CAT
-when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
-OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
-and ceiling(MAXIUMVALUE) between  100 and 115) then  CAT
-when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
-OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
-and ceiling(MAXIUMVALUE) = 100 ) then CAT
+when FNOIND = 'FNO' and ceiling(MAXIUMVALUE) between 25 and 99 and t.BASE <> 999 then catn.A
+when FNOIND Is null  and ceiling(MAXIUMVALUE) between 33 and 99 and t.BASE <> 999 then catn.B
+when FNOIND IS NULL and ceiling(MAXIUMVALUE) between  50 and 99 and  
+(t.CAT not like 'A%' OR t.CAT not like 'B%' OR t.CAT not like 'Q%') and t.BASE = 999 then CAT
+when FNOIND IS NULL and ceiling(MAXIUMVALUE) between  100 and 115 and  
+(t.CAT not like 'A%' OR t.CAT not like 'B%' OR t.CAT not like 'Q%') and t.BASE = 999 then CAT
+when FNOIND IS NULL and ceiling(MAXIUMVALUE) = 100  and  
+(t.CAT not like 'A%' OR t.CAT not like 'B%' OR t.CAT not like 'Q%') and t.BASE = 999 then CAT
+--when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+--OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
+--and ceiling(MAXIUMVALUE) between  50 and 99) then  catn.C
+--when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+--OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
+--and ceiling(MAXIUMVALUE) between  100 and 115) then  catn.D
+--when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+--OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
+--and ceiling(MAXIUMVALUE) = 100 ) then catn.E
 else CAT
 end as 'NEWCAT'
-from #temp1 t left join catc c on t.MAXIUMVALUE = c.Margin
-left join catd d on t.MAXIUMVALUE = d.Margin
-left join cate e on t.MAXIUMVALUE = e.Margin
-left join cate a on t.MAXIUMVALUE = a.Margin
-left join cate b on t.MAXIUMVALUE = b.Margin
-left join cate q on t.MAXIUMVALUE = q.Margin
-LEFT join CATM m on t.MAXIUMVALUE = m.Margin
-group by t.scripcode,FNOIND,MAXIUMVALUE,t.CAT,t.CAT_1,c.Base,d.Base,e.Base,a.Category,b.Category,q.Category,a.Base,b.Base,q.Base
-,m.Base,m.Category
+from #temp1 t 
+--left join catc c on t.MAXIUMVALUE = c.Margin
+--left join catd d on t.MAXIUMVALUE = d.Margin
+--left join cate e on t.MAXIUMVALUE = e.Margin
+left join catmarnew catn on t.MAXIUMVALUE = catn.margin
+--left join cate a on t.MAXIUMVALUE = a.Margin
+--left join cate b on t.MAXIUMVALUE = b.Margin
+--left join cate q on t.MAXIUMVALUE = q.Margin
+--LEFT join CATM m on t.MAXIUMVALUE = m.Margin
+group by t.scripcode,FNOIND,MAXIUMVALUE,t.CAT,catn.Q,catn.A,catn.B,catn.C,catn.D,catn.E,t.BASE
+--,a.Category,b.Category,q.Category,a.Base,b.Base,q.Base
+--,m.Base,m.Category
 ),
 
 CTE1 as (
@@ -372,28 +381,38 @@ from #temp1 t1 inner join CTE1 c1 on t1.scripcode = c1.scripcode
 CTE3 as (
 
 Select    t.scripcode,
-case when FNOIND = 'IND' and ceiling(MAXCAT) between 15 and 99 then CAT_1
-when FNOIND = 'FNO' and ceiling(MAXCAT) between 25 and 99 then CAT_1
-when FNOIND = NULL and ceiling(MAXCAT) between 33 and 99 then CAT_1
-when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
-OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
-and ceiling(MAXCAT) between  50 and 99 )then  CAT_1
-when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
-OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
-and ceiling(MAXCAT) between  100 and 115 )then  CAT_1
-when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
-OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
-and ceiling(MAXCAT) = 100)  then  CAT_1
-else CAT_1
+case when FNOIND = 'IND' and CEILING(MAXCAT) between 15 and 99  then catn.Q
+when ceiling(c2.MAXCAT)>=100 then catn.D
+
+--when FNOIND = 'FNO' and ceiling(MAXCAT) between 25 and 99 and t.BASE <> 999 then catn.A
+--when FNOIND Is null  and ceiling(MAXCAT) between 33 and 99 and t.BASE <> 999 then catn.B
+--when FNOIND IS NULL and ceiling(MAXCAT) between  50 and 99 and  
+--(t.CAT_1 not like 'A%' OR t.CAT_1 not like 'B%' OR t.CAT_1 not like 'Q%') and t.BASE = 999 then catn.C
+--when FNOIND IS NULL and ceiling(MAXCAT) between  100 and 115 and  
+--(t.CAT_1 not like 'A%' OR t.CAT_1 not like 'B%' OR t.CAT_1 not like 'Q%') and t.BASE = 999 then catn.D
+--when FNOIND IS NULL and ceiling(MAXCAT) = 100  and  
+--(t.CAT_1 not like 'A%' OR t.CAT_1 not like 'B%' OR t.CAT_1 not like 'Q%') and t.BASE = 999 then catn.E
+--when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+--OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
+--and ceiling(MAXIUMVALUE) between  50 and 99) then  catn.C
+--when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+--OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
+--and ceiling(MAXIUMVALUE) between  100 and 115) then  catn.D
+--when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
+--OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
+--and ceiling(MAXIUMVALUE) = 100 ) then catn.E
+else  catn.A
 end as 'CAT1NEW'
 from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
-left join catc c on c2.MAXCAT = c.Margin
-left join catd d on c2.MAXCAT = d.Margin
-left join cate e on c2.MAXCAT = e.Margin
-left join cate a on c2.MAXCAT = a.Margin
-left join cate b on c2.MAXCAT = b.Margin
-left join cate q on c2.MAXCAT = q.Margin 
-group by t.scripcode,FNOIND,MAXCAT,t.CAT,t.CAT_1,c.Base,d.Base,e.Base
+--left join catc c on c2.MAXCAT = c.Margin
+--left join catd d on c2.MAXCAT = d.Margin
+--left join cate e on c2.MAXCAT = e.Margin
+left join catmarnew catn on ceiling(c2.MAXCAT) = catn.margin
+--left join cate a on c2.MAXCAT = a.Margin
+--left join cate b on c2.MAXCAT = b.Margin
+--left join cate q on c2.MAXCAT = q.Margin 
+
+group by t.scripcode,FNOIND,MAXCAT,catn.A,catn.Q,catn.D
 )
 
 
@@ -444,11 +463,19 @@ c3.CAT1NEW,
 order by FNOIND desc
 
 
-select *  from #final where rownn =1
+select *  from #final where rownn =1 
+--and BASE = 999 and MAXCAT between 50 and 99 
+--and FNOIND = 'IND'
+--and CAT1NEW is null 
+--and MAXCAT =100
+--and ISINNO ='INE264T01014'
+--and MAXCAT = 100
+--
+--and ISINNO = 'INE043D01016'
+--and BASE <>999 and MAXCAT = '100'
+--and BASE = 999 and CAT1NEW like 'Q%'
 --AND MAXIUMVALUE ='30'
 --and NEWCAT like 'C%'
-
-
 
 order by FNOIND desc  
 
