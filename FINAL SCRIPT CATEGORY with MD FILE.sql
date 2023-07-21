@@ -46,9 +46,7 @@ deletE FROM bhav2 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav3 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav4 WHERE SYMBOL = 'SYMBOL';
 
-exec mdisin;
-
-
+exec mdisin;---generate ISIN based on NSE file with MD file in this SP to avoid manual work (Vlookup)
 
 with 
 varvalues as (
@@ -76,14 +74,6 @@ group by FNOIND,m1.[ scripcode],[VAR],ELM,ADDI, m1.[ Category]
 ),
 
 fnovalues as ( select   m2.[ scripcode],
---,SP.Symbol,
---(CONVERT (float,sp.[SPANMgn] )/100
---(convert(float,sp.[SPANMgn] )
---+ convert(float,sp.[AddExpMgn] ) + convert(float,sp.[ExpMgn] )) /100
-
---+ CONVERT (float,sp.[ExpMgn] ) + CONVERT (float,sp.[AddExpMgn] ) AS 'FNO'
---convert(float ,sp.[SPANMgn] ) + 
---convert(float,[TotalMgn]) as 'FNOMAR'
 (convert(float ,sp.[SPANMgn] ) + convert(float ,sp.AddExpMgn )+ convert(float ,sp.ExpMgn )) /100 as 'FNOMAR'
 
 --(sp.[SPANMgn] +sp.[ExpMgn]+sp.[AddExpMgn])  as  'FNOMAR'
@@ -93,7 +83,7 @@ inner  join [dbo].[NSEM] ns on m2.[ scripcode] = ns.Token
 left join span sp on m2.[ Scrip_Name] = sp.Symbol and ns.Series = 'EQ'
 where ns.series not in ('BE','BZ','BO','BT','IT','SM','SG','ST','SZ')
 group by m2.[ scripcode],TotalMgn,[SPANMgn],AddExpMgn,ExpMgn
---,sp.[AddExpMgn],sp.[SPANMgn],sp.[ExpMgn]
+
 ),
 
 maxvalue as (
@@ -173,27 +163,7 @@ else b5.TOTTRDQTY
 end as 'T',
 convert(float,ISNULL(b3.[CLOSE],0)) as 'T-2Rate', convert(float,ISNULL(b4.[CLOSE],0) )as 'T-1Rate'
 ,convert(float,ISNULL(b5.[CLOSE],0)) as 'TRate',
---case when b3.[CLOSE] is null then 0 
---else b3.[CLOSE]  end as 'T-2Rate',
---case when b4.[CLOSE] is null then 0 
---else b4.[CLOSE] end as 'T-1Rate',
---case when b5.[CLOSE] is null then 0 
---else b5.[CLOSE]  end as 'TRate',
---b4.[CLOSE] as 'T-1Rate',
---b5.[CLOSE] as 'TRate',
---round ((abs((b5.[CLOSE]-b4.[CLOSE])/b5.[CLOSE]))* 100 ,3 ) as '1Day', --ABS((P1-O1)/P1)*100
---round ((abs((b5.[CLOSE]-b3.[CLOSE])/b5.[CLOSE]))* 100 , 3 ) as '2Day', --ABS((P1-N1)/P1)*100
---case 
---when  b1.TOTTRDQTY <> 0 OR  b1.TOTTRDQTY = 0    then   (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
---when  b2.TOTTRDQTY <> 0 OR  b2.TOTTRDQTY = 0  then (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
---when  b3.TOTTRDQTY <> 0 OR  b3.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
---when  b4.TOTTRDQTY <> 0 OR  b4.TOTTRDQTY = 0  then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
---when  b5.TOTTRDQTY <> 0 OR  b5.TOTTRDQTY = 0   then  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5
---else  (b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)
 
---end as 'AVERAGES '
-
---(b1.TOTTRDQTY+b2.TOTTRDQTY+b3.TOTTRDQTY+b4.TOTTRDQTY+b5.TOTTRDQTY)/5 as 'AVERAGES'
 vr.[VAR] as 'VAR',
 vr.ELM as 'ELM',
 vr.ADDI as 'ADDI',
@@ -255,7 +225,6 @@ sp.[AddExpMgn],bs.ScripCode,bs.ScripId,v.[var+el+adii],f.FNOMAR,mx.maxvalues,im.
 order by  tf.FNOIND desc ;
 
 
-
  with Avgs as (
 
 Select distinct   m.scripcode,
@@ -278,7 +247,6 @@ where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ')
 group by m.scripcode,[T-4V],[T-3V],[T-2V],[T-1V],T,b1.TOTTRDQTY,b2.TOTTRDQTY
 ,b3.TOTTRDQTY,b4.TOTTRDQTY,b5.TOTTRDQTY
 ),
---ISNULL(@Product1 / NULLIF(@Product2,0),0)
 dayvalues as (
 Select distinct m.scripcode,
 round ((abs(ISNULL((TRate-[T-1Rate])/NULLIF(TRate,0),0)))* 100 ,3 ) as '1Day', --ABS((P1-O1)/P1)*100
@@ -297,12 +265,6 @@ group by m.scripcode,TRate,[T-1Rate],[T-2Rate]
 
 select distinct t.scripcode ,
 case when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and t.BASE <> 999 then catn.Q
- --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and m.Base = 'A' then m.Category
- --when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and m.Base = 'B' then m.Category
-
---when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and b.Base = 'B%' then b.Category
---when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and (q.Base = 'Q%' or q.Base = 'Q')  then q.Category
---when FNOIND = 'IND' and ceiling(MAXIUMVALUE) between 15 and 99 and a.Base = 'A' then a.Category
 when FNOIND = 'FNO' and ceiling(MAXIUMVALUE) between 25 and 99 and t.BASE <> 999 then catn.A
 when FNOIND Is null  and ceiling(MAXIUMVALUE) between 33 and 99 and t.BASE <> 999 then catn.B
 when FNOIND IS NULL and ceiling(MAXIUMVALUE) between  50 and 99 and  
@@ -311,29 +273,11 @@ when FNOIND IS NULL and ceiling(MAXIUMVALUE) between  100 and 115 and
 (t.CAT not like 'A%' OR t.CAT not like 'B%' OR t.CAT not like 'Q%') and t.BASE = 999 then CAT
 when FNOIND IS NULL and ceiling(MAXIUMVALUE) = 100  and  
 (t.CAT not like 'A%' OR t.CAT not like 'B%' OR t.CAT not like 'Q%') and t.BASE = 999 then CAT
---when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
---OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
---and ceiling(MAXIUMVALUE) between  50 and 99) then  catn.C
---when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
---OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
---and ceiling(MAXIUMVALUE) between  100 and 115) then  catn.D
---when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
---OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
---and ceiling(MAXIUMVALUE) = 100 ) then catn.E
 else CAT
 end as 'NEWCAT'
 from #temp1 t 
---left join catc c on t.MAXIUMVALUE = c.Margin
---left join catd d on t.MAXIUMVALUE = d.Margin
---left join cate e on t.MAXIUMVALUE = e.Margin
 left join catmarnew catn on t.MAXIUMVALUE = catn.margin
---left join cate a on t.MAXIUMVALUE = a.Margin
---left join cate b on t.MAXIUMVALUE = b.Margin
---left join cate q on t.MAXIUMVALUE = q.Margin
---LEFT join CATM m on t.MAXIUMVALUE = m.Margin
 group by t.scripcode,FNOIND,MAXIUMVALUE,t.CAT,catn.Q,catn.A,catn.B,catn.C,catn.D,catn.E,t.BASE
---,a.Category,b.Category,q.Category,a.Base,b.Base,q.Base
---,m.Base,m.Category
 ),
 
 CTE1 as (
@@ -360,38 +304,13 @@ CTE3 as (
 Select    t.scripcode,
 case when FNOIND = 'IND' and CEILING(MAXCAT) between 15 and 99  then catn.Q
 when ceiling(c2.MAXCAT)>=100 then catn.D
-
---when FNOIND = 'FNO' and ceiling(MAXCAT) between 25 and 99 and t.BASE <> 999 then catn.A
---when FNOIND Is null  and ceiling(MAXCAT) between 33 and 99 and t.BASE <> 999 then catn.B
---when FNOIND IS NULL and ceiling(MAXCAT) between  50 and 99 and  
---(t.CAT_1 not like 'A%' OR t.CAT_1 not like 'B%' OR t.CAT_1 not like 'Q%') and t.BASE = 999 then catn.C
---when FNOIND IS NULL and ceiling(MAXCAT) between  100 and 115 and  
---(t.CAT_1 not like 'A%' OR t.CAT_1 not like 'B%' OR t.CAT_1 not like 'Q%') and t.BASE = 999 then catn.D
---when FNOIND IS NULL and ceiling(MAXCAT) = 100  and  
---(t.CAT_1 not like 'A%' OR t.CAT_1 not like 'B%' OR t.CAT_1 not like 'Q%') and t.BASE = 999 then catn.E
---when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
---OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and c.Base = 'C'
---and ceiling(MAXIUMVALUE) between  50 and 99) then  catn.C
---when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
---OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and d.Base = 'D'
---and ceiling(MAXIUMVALUE) between  100 and 115) then  catn.D
---when FNOIND is null  and (t.CAT not in ('A','B','Q') OR t.CAT not like 'A%'
---OR t.CAT not like 'B%' OR t.CAT not like 'Q%' and e.Base ='E'
---and ceiling(MAXIUMVALUE) = 100 ) then catn.E
 else  catn.A
 end as 'CAT1NEW'
-from #temp1 t inner join CTE2 c2 on t.scripcode = c2.scripcode
---left join catc c on c2.MAXCAT = c.Margin
---left join catd d on c2.MAXCAT = d.Margin
---left join cate e on c2.MAXCAT = e.Margin
+from #temp1 t
+inner join CTE2 c2 on t.scripcode = c2.scripcode
 left join catmarnew catn on ceiling(c2.MAXCAT) = catn.margin
---left join cate a on c2.MAXCAT = a.Margin
---left join cate b on c2.MAXCAT = b.Margin
---left join cate q on c2.MAXCAT = q.Margin 
-
 group by t.scripcode,FNOIND,MAXCAT,catn.A,catn.Q,catn.D
 )
-
 
 
 select  distinct ROW_NUMBER() over (Partition by t.ISINNO order by FNOIND) as 'rownn',
@@ -424,7 +343,6 @@ inner join Avgs a on t.scripcode =a.scripcode
 inner join dayvalues d on t.scripcode = d.scripcode
 where rownn   = 1 
 --and ISINNO = 'IN0020220102'
---and [SPANMgn%] <> 0 
 group by FNOIND,CAT_1,ISINNO,t.scripcode,[Symbol Series],Series,CAT,BASE,[T-4V],[T-3V],[T-2V],[T-1V],[T]
 ,[T-2Rate],[T-1Rate],[TRate],d.[1Day],d.[2Day],AVEGRAGES,[VAR],ELM,ADDI,[var+el+adii],ISINNO,
 [SPANMgn]
@@ -435,24 +353,10 @@ t.BSECode,t.scripNameBSE
 c2.MAXCAT,
 c3.CAT1NEW,
 [ASM FLAG]
-
-
 order by FNOIND desc
 
-
-select *  from #final where rownn =1 
---and BASE = 999 and MAXCAT between 50 and 99 
---and FNOIND = 'IND'
---and CAT1NEW is null 
---and MAXCAT =100
---and ISINNO ='INE264T01014'
---and ISINNO = 'INE043D01016'
---and BASE <>999 and MAXCAT = '100'
---and BASE = 999 and CAT1NEW like 'Q%'
---AND MAXIUMVALUE ='30'
---and NEWCAT like 'C%'
-
-order by FNOIND desc  
+------Final Report Generation-----------
+select *  from #final where rownn =1 order by FNOIND desc  
 
 
 

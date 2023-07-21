@@ -45,8 +45,10 @@ delete from bhav1 where SYMBOL = 'SYMBOL';
 deletE FROM bhav2 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav3 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav4 WHERE SYMBOL = 'SYMBOL';
+deletE FROM bhav5 WHERE SYMBOL = 'SYMBOL';
 
-exec mdisin;
+
+--exec mdisin;
 
 
 
@@ -238,7 +240,8 @@ left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL
 left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
-left join mdisin1 b5 on m.ISINNO = b5.ISIN and b5.SERIES not in ('BO','BL')
+left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+--left join mdisin1 b5 on m.ISINNO = b5.ISIN and b5.SERIES not in ('BO','BL')
 --left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
 --left  join   [dbo].[bhav6] b5 on ns.ISIN = b5.ISINNO and b5.SERIES not in ('BO','BL')  
 inner join VARreport vr on m.ISINNO = vr.ISINNO
@@ -273,7 +276,7 @@ left join [dbo].[bhav1] b1 on m.ISINNO = b1.ISIN  and b1.SERIES not in ('BO','BL
 left join [dbo].[bhav2] b2 on m.ISINNO = b2.ISIN  and b2.SERIES not in ('BO','BL')
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
-left join [dbo].mdisin1 b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+left join [dbo].[bhav5] b5 on m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
 where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ')
 group by m.scripcode,[T-4V],[T-3V],[T-2V],[T-1V],T,b1.TOTTRDQTY,b2.TOTTRDQTY
 ,b3.TOTTRDQTY,b4.TOTTRDQTY,b5.TOTTRDQTY
@@ -288,7 +291,7 @@ from #temp1 m
 inner  join [dbo].[NSEM] ns on m.scripcode = ns.Token
 left join [dbo].[bhav3] b3 on m.ISINNO = b3.ISIN   and b3.SERIES not in ('BO','BL')
 left join [dbo].[bhav4] b4 on m.ISINNO = b4.ISIN   and b4.SERIES not in ('BO','BL')
-left join [dbo].mdisin1 b5 on  m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
+left join [dbo].[bhav5] b5 on  m.ISINNO = b5.ISIN   and b5.SERIES not in ('BO','BL')
 where ns.series not in ('BE','BO','BZ','BL','BT','IT','SM','SG','ST','SZ')
 group by m.scripcode,TRate,[T-1Rate],[T-2Rate]
 ),
