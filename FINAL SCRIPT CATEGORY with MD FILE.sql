@@ -34,19 +34,18 @@
 
 
 DROP TABLE	IF EXISTS #temp1;
-
+DROP TABLE	IF EXISTS venturaDb..FinalScriptCategory
 DROP TABLE	IF EXISTS #final;
-
-DELETe  from NSEM where Symbol = 'Symbol';
-
+delete from NSEM where Symbol = 'Symbol';
 deletE FROM SPAN WHERE Symbol = 'Symbol';
-
 delete from bhav1 where SYMBOL = 'SYMBOL';
 deletE FROM bhav2 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav3 WHERE SYMBOL = 'SYMBOL';
 deletE FROM bhav4 WHERE SYMBOL = 'SYMBOL';
 
 exec mdisin;---generate ISIN based on NSE file with MD file in this SP to avoid manual work (Vlookup)
+
+
 
 with 
 varvalues as (
@@ -147,23 +146,22 @@ ns.Series,
 Rtrim(m.[ Category]) as 'CAT',
 (Case when (m.[ Category] in ('C','D','E') or m.[ Category] like 'C_%_%' ) then 999 else ca.Margin end) as 'BASE',
 case when ns.Series in ('GS','GB') and  b1.TOTTRDQTY is null then   0
-else b1.TOTTRDQTY
+else convert(float,b1.TOTTRDQTY)
 end as 'T-4V',
 case when ns.Series in ('GS','GB') and  b2.TOTTRDQTY is null then   0
-else b2.TOTTRDQTY
+else convert(float,b2.TOTTRDQTY)
 end as 'T-3V',
 case when ns.Series in ('GS','GB') and  b3.TOTTRDQTY is null then   0
-else b3.TOTTRDQTY
+else convert(float,b3.TOTTRDQTY)
 end as 'T-2V',
 case when ns.Series in ('GS','GB') and  b4.TOTTRDQTY is null then   0
-else b4.TOTTRDQTY
+else convert(float,b4.TOTTRDQTY)
 end as 'T-1V',
 case when ns.Series in ('GS','GB') and  b5.TOTTRDQTY is null then   0
-else b5.TOTTRDQTY
+else convert(float,b5.TOTTRDQTY)
 end as 'T',
 convert(float,ISNULL(b3.[CLOSE],0)) as 'T-2Rate', convert(float,ISNULL(b4.[CLOSE],0) )as 'T-1Rate'
 ,convert(float,ISNULL(b5.[CLOSE],0)) as 'TRate',
-
 vr.[VAR] as 'VAR',
 vr.ELM as 'ELM',
 vr.ADDI as 'ADDI',
@@ -277,6 +275,7 @@ else CAT
 end as 'NEWCAT'
 from #temp1 t 
 left join catmarnew catn on t.MAXIUMVALUE = catn.margin
+--where t.ISINNO = 'INE999B01013'
 group by t.scripcode,FNOIND,MAXIUMVALUE,t.CAT,catn.Q,catn.A,catn.B,catn.C,catn.D,catn.E,t.BASE
 ),
 
@@ -356,9 +355,15 @@ c3.CAT1NEW,
 order by FNOIND desc
 
 ------Final Report Generation-----------
-select *  from #final where rownn =1 order by FNOIND desc  
+select *  into venturaDb..FinalScriptCategory from #final where rownn =1 
+--into venturaDb..FinalScriptCategory
+order by FNOIND desc  
 
 
+select * from FinalScriptCategory
+--where ISINNO ='IN0020210012'
+
+order by FNOIND desc 
 
 ----select [VAR],ELM,ADDI,[var+el+adii],MAXIMUMVALUE,* from #final where CAT = 'D'  or CAT like 'C%'
 
